@@ -59,7 +59,12 @@ def load_sheet():
     total_spend = df['spend'].sum()
     total_leads = df['leads'].sum()
     print(f"✅ {len(df)} linhas | {df['date'].min().date()} → {df['date'].max().date()}")
-    print(f"💰 Total spend: R${total_spend:,.2f} | Total leads: {int(total_leads):,}")
+    print(f"💰 Total spend: R${df['spend'].sum():,.2f}")
+    print(f"👥 Total leads: {int(df['leads'].sum()):,}")
+    print(f"👁️ Total impressões: {int(df['impressions'].sum()):,}")
+    print(f"🖱️ Total cliques: {int(df['clicks'].sum()):,}")
+    print(f"📊 Colunas disponíveis: {list(df.columns)}")
+    print(f"📌 Amostra spend (5 linhas): {df['spend'].head().tolist()}")
     return df
 
 
