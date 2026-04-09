@@ -103,6 +103,19 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .conj-name{padding-left:28px!important;border-left:2px solid #e2e8f0;color:#374151;}
 .num{text-align:right;font-family:'DM Mono',monospace;font-size:11px;}
 .cg{color:var(--green);font-weight:700;} .cw2{color:var(--warn);font-weight:700;} .cr{color:var(--red);font-weight:700;}
+/* CAMP CARDS MOBILE */
+.camp-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:var(--sh);}
+.camp-card-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;cursor:pointer;}
+.camp-card-name{font-size:12px;font-weight:700;flex:1;line-height:1.3;}
+.camp-card-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+.camp-card-metric{text-align:center;}
+.camp-card-metric .lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
+.camp-card-metric .val{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;}
+.camp-card-conjs{margin-top:8px;border-top:1px solid var(--border);padding-top:8px;display:none;}
+.camp-card-conjs.open{display:block;}
+.conj-card{background:var(--surface2);border-radius:6px;padding:8px;margin-bottom:4px;}
+.conj-card-name{font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px;}
+.conj-card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
 /* SPARKLINE */
 .spk-wrap{width:72px;height:28px;display:inline-block;vertical-align:middle;}
 /* ADS GRID */
@@ -593,6 +606,42 @@ function buildCampTable(){
     }
   });
 
+  if(window.innerWidth<=768){
+    // Mobile: card layout
+    let cards='';
+    data.forEach((c,i)=>{
+      const cid=`c${ym.replace('-','')}${i}`;
+      const hasMulti=c.conjs&&c.conjs.length>1;
+      const prodColor=c.product==='CLT'?G:O;
+      const prodBg=c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)';
+      cards+=`<div class="camp-card">
+        <div class="camp-card-hd" onclick="toggleCard('${cid}')">
+          <div class="camp-card-name">${c.n}</div>
+          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${prodBg};color:${prodColor};font-weight:700;white-space:nowrap">${c.product}</span>
+          ${hasMulti?`<span style="color:var(--muted);font-size:12px">${OPEN.has(cid)?'▼':'▶'}</span>`:''}
+        </div>
+        <div class="camp-card-metrics">
+          <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(c.spend)}</div></div>
+          <div class="camp-card-metric"><div class="lbl">Leads</div><div class="val">${fN(c.leads)}</div></div>
+          <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(c.cpl)}">${fR(c.cpl)}</div></div>
+          <div class="camp-card-metric"><div class="lbl">CTR</div><div class="val">${c.ctr!=null?c.ctr.toFixed(2)+'%':'—'}</div></div>
+        </div>
+        ${hasMulti?`<div class="camp-card-conjs ${OPEN.has(cid)?'open':''}" id="conj-${cid}">
+          ${c.conjs.map(j=>`<div class="conj-card">
+            <div class="conj-card-name">↳ ${j.n}</div>
+            <div class="conj-card-metrics">
+              <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(j.spend)}</div></div>
+              <div class="camp-card-metric"><div class="lbl">Leads</div><div class="val">${fN(j.leads)}</div></div>
+              <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(j.cpl)}">${fR(j.cpl)}</div></div>
+            </div>
+          </div>`).join('')}
+        </div>`:''}
+      </div>`;
+    });
+    tbl.innerHTML=cards;
+    return;
+  }
+
   tbl.innerHTML=`<div class="tc"><table>
     <thead><tr><th style="width:20px"></th><th>Campanha</th><th class="num">Produto</th><th class="num">Invest.</th><th class="num">Leads</th><th class="num">CPL</th><th class="num">CPM</th><th class="num">CTR</th><th style="width:80px">Tendência CPL</th></tr></thead>
     <tbody>${rows}</tbody></table></div>`;
@@ -676,6 +725,13 @@ function toggleMesAcc(el){
   el.nextElementSibling.classList.toggle('open');
 }
 
+function toggleCard(id){
+  const el=document.getElementById('conj-'+id);
+  if(!el)return;
+  const isOpen=OPEN.has(id);
+  if(isOpen){OPEN.delete(id);el.classList.remove('open');}
+  else{OPEN.add(id);el.classList.add('open');}
+}
 function toggleC(id){
   const rows=document.querySelectorAll(`[data-cid="${id}"]`);
   const isOpen=OPEN.has(id);
@@ -692,10 +748,12 @@ function toggleC(id){
 
 // ═══ ADS GRID ═══════════════════════════════════════
 function buildAds(){
+  const aKey=mesMode||String(period);
+  const periodAds=ADS_DATA[aKey]||ADS_DATA['30']||{};
   ['CLT','FGTS'].forEach(p=>{
     const el=document.getElementById('ag'+p);
     el.innerHTML='';
-    const adList=(ADS_DATA[p]&&ADS_DATA[p].length>0)?ADS_DATA[p]:[];
+    const adList=(periodAds[p]&&periodAds[p].length>0)?periodAds[p]:[];
     if(adList.length===0){
       el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px">Nenhum criativo disponível</div>';
       return;
