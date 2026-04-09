@@ -724,10 +724,12 @@ function toggleC(id){
 
 // ═══ ADS GRID ═══════════════════════════════════════
 function buildAds(){
+  const aKey=mesMode||String(period);
+  const adsMap=ADS_DATA[aKey]||ADS_DATA['30']||{};
   ['CLT','FGTS'].forEach(p=>{
     const el=document.getElementById('ag'+p);
     el.innerHTML='';
-    const adList=(ADS_DATA[p]&&ADS_DATA[p].length>0)?ADS_DATA[p]:[];
+    const adList=adsMap[p]||[];
     if(adList.length===0){
       el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px">Nenhum criativo disponível</div>';
       return;
@@ -735,7 +737,7 @@ function buildAds(){
     adList.forEach(ad=>{
       const cC=cc(ad.cpl);
       const d=document.createElement('div');d.className='ad-card';
-      const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'ad-img-placeholder\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
+      const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'ad-img-placeholder\\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
       d.innerHTML=`${img}<div class="ad-info"><div class="ad-name">${ad.n}</div><div class="ad-stats"><div><div class="as-l">Leads</div><div class="as-v">${fN(ad.leads)}</div></div><div><div class="as-l">CPL</div><div class="as-v" style="color:${cC}">${fR(ad.cpl)}</div></div></div></div>`;
       el.appendChild(d);
     });

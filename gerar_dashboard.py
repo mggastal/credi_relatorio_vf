@@ -351,11 +351,12 @@ def build_mes_days(df):
 
 
 # ── CRIATIVOS COM IMAGENS ─────────────────────────────
-def build_ads(df, img_dir):
-    df_ads = df[
-        df["thumb"].notna() &
-        (df["thumb"].astype(str) != "") &
-        (df["thumb"].astype(str) != "nan")
+def build_ads_period(df, start_dt, end_dt, img_dir):
+    p = df[(df["date"] >= pd.Timestamp(start_dt)) & (df["date"] <= pd.Timestamp(end_dt))]
+    df_ads = p[
+        p["thumb"].notna() &
+        (p["thumb"].astype(str) != "") &
+        (p["thumb"].astype(str) != "nan")
     ].copy()
 
     ads_agg = df_ads.groupby(["ad", "product", "thumb"]).agg(
@@ -375,7 +376,30 @@ def build_ads(df, img_dir):
                 "cpl": round(tS / tL, 2) if tL > 0 else None,
                 "thumb": local,
             })
-    print(f"   CLT: {len(result['CLT'])} criativos | FGTS: {len(result['FGTS'])} criativos")
+    return result
+
+
+def build_ads(df, img_dir, all_days):
+    last = pd.Timestamp(all_days[-1])
+    all_months = sorted(df["ym"].unique())
+    result = {}
+
+    for n in [1, 7, 14, 30]:
+        start = last - pd.Timedelta(days=n - 1)
+        result[str(n)] = build_ads_period(df, start, last, img_dir)
+        print(f"   {n}d: CLT {len(result[str(n)]['CLT'])} | FGTS {len(result[str(n)]['FGTS'])}")
+
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+        try:
+            ym = pd.Period(ym_str, "M")
+            if ym not in all_months:
+                continue
+            start = ym.start_time
+            end = min(ym.end_time, last)
+            result[ym_str] = build_ads_period(df, start, end, img_dir)
+        except Exception as e:
+            print(f"   {ym_str}: erro {e}")
+
     return result
 
 
@@ -433,7 +457,7 @@ def main():
     print("Imagens dos criativos...")
     img_dir = Path("imgs")
     img_dir.mkdir(exist_ok=True)
-    ads_data = build_ads(df, img_dir)
+    ads_data = build_ads(df, img_dir, all_days)
 
     print("Gerando HTML...")
     if not Path(TEMPLATE_FILE).exists():
