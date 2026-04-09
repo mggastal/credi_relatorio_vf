@@ -493,11 +493,7 @@ function render(){
       prevCTR=av(sl(DAILY.ctr,pi));prevCPM=av(sl(DAILY.cpm,pi));
     }
   }
-  function dot(c,p,fmt,lb){
-    if(!p||!c)return '';
-    const ok=lb?c<p:c>p;
-    return `<div class="kpi-prev"><div class="kpi-prev-dot" style="background:${ok?G:O}"></div><div class="kpi-prev-lbl">Ant: ${fmt(p)}</div></div>`;
-  }
+function dot(c,p,fmt,lb){ return ''; }
 
   document.getElementById('kpiStrip').innerHTML=`
     <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Investimento</div><div class="kpi-val">R$${(tS/1000).toFixed(1)}k</div>${dot(tS,prevS,v=>'R$'+(v/1000).toFixed(1)+'k',false)}</div>
