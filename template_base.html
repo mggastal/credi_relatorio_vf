@@ -9,8 +9,8 @@
 <style>
 :root{--bg:#f0f2f7;--surface:#fff;--surface2:#f7f8fc;--border:rgba(0,0,0,0.07);--text:#0f1523;--muted:#6b7280;--muted2:#9ca3af;--green:#059669;--gbg:#ecfdf5;--gborder:#a7f3d0;--orange:#ea580c;--obg:#fff7ed;--oborder:#fdba74;--red:#dc2626;--warn:#d97706;--sh:0 1px 4px rgba(0,0,0,.06);--sh2:0 2px 12px rgba(0,0,0,.08);--r:14px;}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;}
-.app{display:grid;grid-template-columns:210px 1fr;min-height:100vh;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;overflow-y:auto;}
+.app{display:grid;grid-template-columns:210px 1fr;min-height:100vh;align-items:start;}
 .sb{background:#0f1523;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
 .sb-logo{display:flex;align-items:center;gap:10px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.07);}
 .logo-box{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#00c49a,#059669);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;font-family:'Syne',sans-serif;}
@@ -30,7 +30,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .sb-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);}
 .sb-footer div{font-size:10px;color:rgba(255,255,255,.25);margin-bottom:2px;}
 .sb-footer span{font-size:11px;color:rgba(255,255,255,.4);}
-.main{overflow:hidden;display:flex;flex-direction:column;}
+.main{display:flex;flex-direction:column;min-height:0;}
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--sh);gap:12px;flex-wrap:wrap;}
 .topbar-l{display:flex;align-items:center;gap:10px;flex-shrink:0;}
 .page-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
@@ -41,7 +41,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .pb{padding:5px 11px;border-radius:7px;border:none;background:transparent;cursor:pointer;font-size:11px;font-weight:600;color:var(--muted);transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
 .pb.active{background:var(--surface);color:var(--text);box-shadow:var(--sh);}
 .pb.mes{font-size:10px;padding:4px 8px;}
-.content{padding:18px 24px;flex:1;overflow-y:auto;}
+.content{padding:18px 24px;flex:1;}
 .page-section{display:none;}
 .page-section.active{display:block;}
 /* KPI */
@@ -492,19 +492,19 @@ function render(){
 
   const kKey=mesMode||String(period);
   const K=KPIS_PERIODO[kKey]||{};
-  const tS=K.spend!=null?K.spend:sm(spend);
-  const tL=K.leads!=null?K.leads:sm(leads);
+  const tS=(K.spend!==undefined&&K.spend!==null)?K.spend:sm(spend);
+  const tL=(K.leads!==undefined&&K.leads!==null)?K.leads:sm(leads);
   const avgCPL=K.cpl!=null?K.cpl:(tL>0?tS/tL:0);
-  const avgCTR=K.ctr!=null?K.ctr:0;
-  const avgCPM=K.cpm!=null?K.cpm:0;
+  const avgCTR=(K.ctr!==undefined&&K.ctr!==null)?K.ctr:av(ctr);
+  const avgCPM=(K.cpm!==undefined&&K.cpm!==null)?K.cpm:av(cpm);
   const cltSpT=K.cltSpend!=null?K.cltSpend:sm(cltS);
   const cltLT=K.cltLeads!=null?K.cltLeads:sm(cltL);
   const fgtsSpT=K.fgtsSpend!=null?K.fgtsSpend:sm(fgtsS);
   const fgtsLT=K.fgtsLeads!=null?K.fgtsLeads:sm(fgtsL);
   const cltCPLav=K.cltCpl!=null?K.cltCpl:(cltLT>0?cltSpT/cltLT:0);
   const fgtsCPLav=K.fgtsCpl!=null?K.fgtsCpl:(fgtsLT>0?fgtsSpT/fgtsLT:0);
-  const cltCTRav=K.cltCtr!=null?K.cltCtr:0;
-  const fgtsCTRav=K.fgtsCtr!=null?K.fgtsCtr:0;
+  const cltCTRav=(K.cltCtr!==undefined&&K.cltCtr!==null)?K.cltCtr:av(cltCTR.filter(v=>v!=null));
+  const fgtsCTRav=(K.fgtsCtr!==undefined&&K.fgtsCtr!==null)?K.fgtsCtr:av(fgtsCTR.filter(v=>v!=null));
 
   if(days.length){
     document.getElementById('sbDates').textContent=days[0]+(days.length>1?' → '+days[days.length-1]:'');
@@ -724,12 +724,10 @@ function toggleC(id){
 
 // ═══ ADS GRID ═══════════════════════════════════════
 function buildAds(){
-  const aKey=mesMode||String(period);
-  const adsMap=ADS_DATA[aKey]||ADS_DATA['30']||{};
   ['CLT','FGTS'].forEach(p=>{
     const el=document.getElementById('ag'+p);
     el.innerHTML='';
-    const adList=adsMap[p]||[];
+    const adList=(ADS_DATA[p]&&ADS_DATA[p].length>0)?ADS_DATA[p]:[];
     if(adList.length===0){
       el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px">Nenhum criativo disponível</div>';
       return;
@@ -737,7 +735,7 @@ function buildAds(){
     adList.forEach(ad=>{
       const cC=cc(ad.cpl);
       const d=document.createElement('div');d.className='ad-card';
-      const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'ad-img-placeholder\\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
+      const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'ad-img-placeholder\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
       d.innerHTML=`${img}<div class="ad-info"><div class="ad-name">${ad.n}</div><div class="ad-stats"><div><div class="as-l">Leads</div><div class="as-v">${fN(ad.leads)}</div></div><div><div class="as-l">CPL</div><div class="as-v" style="color:${cC}">${fR(ad.cpl)}</div></div></div></div>`;
       el.appendChild(d);
     });
