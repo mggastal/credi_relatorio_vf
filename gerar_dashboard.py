@@ -71,17 +71,11 @@ def load_sheet():
 # ── DADOS DIÁRIOS ─────────────────────────────────────
 def build_daily(df):
     # Filtra só campanhas de performance (com leads) para CTR/CPM
-    df_perf = df[df['leads'] > 0]
-
+    
     daily = df.groupby('date').agg(
         spend=('spend', 'sum'), leads=('leads', 'sum'),
         impressions=('impressions', 'sum'), clicks=('clicks', 'sum')
     ).reset_index().sort_values('date')
-
-    daily_perf = df_perf.groupby('date').agg(
-        impressions_perf=('impressions', 'sum'),
-        clicks_perf=('clicks', 'sum')
-    ).reset_index()
 
     daily_clt = df[df['product'] == 'CLT'].groupby('date').agg(
         spend=('spend', 'sum'), leads=('leads', 'sum')).reset_index()
@@ -107,24 +101,20 @@ def build_daily(df):
         tl = int(r['leads']); ts = float(r['spend'])
         imp = float(r['impressions']); clk = float(r['clicks'])
 
-        pr = daily_perf[daily_perf['date'] == d]
-        imp_p = float(pr['impressions_perf'].sum()) if len(pr) else imp
-        clk_p = float(pr['clicks_perf'].sum()) if len(pr) else clk
-
         out['days'].append(pd.Timestamp(d).strftime('%d/%m'))
         out['spend'].append(round(ts, 2))
         out['leads'].append(tl)
         out['cpl'].append(round(ts/tl, 2) if tl > 0 else None)
-        out['ctr'].append(round(clk_p/imp_p*100, 2) if imp_p > 0 else None)
-        out['cpm'].append(round(ts/imp_p*1000, 2) if imp_p > 0 else None)
+        out['ctr'].append(round(clk/imp*100, 2) if imp > 0 else None)
+        out['cpm'].append(round(ts/imp*1000, 2) if imp > 0 else None)
         out['cltL'].append(cl)
         out['fgtsL'].append(fl)
         out['cltS'].append(cs)
         out['fgtsS'].append(fs)
         out['cltCPL'].append(round(cs/cl, 2) if cl > 0 else None)
         out['fgtsCPL'].append(round(fs/fl, 2) if fl > 0 else None)
-        cltCTR = round(clk_p/imp_p*100*(cl/tl if tl else 1), 2) if imp_p > 0 and tl > 0 else None
-        fgtsCTR = round(clk_p/imp_p*100*(fl/tl if tl else 0), 2) if imp_p > 0 and tl > 0 and fl > 0 else None
+        cltCTR = round(clk/imp*100*(cl/tl if tl else 1), 2) if imp > 0 and tl > 0 else None
+        fgtsCTR = round(clk/imp*100*(fl/tl if tl else 0), 2) if imp > 0 and tl > 0 and fl > 0 else None
         out['cltCTR'].append(cltCTR)
         out['fgtsCTR'].append(fgtsCTR)
 
