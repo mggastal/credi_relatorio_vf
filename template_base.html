@@ -253,7 +253,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
       </div>
       <!-- CRIATIVOS -->
       <div class="section">
-        <div class="sec-hd">Criativos <span>— Mar/2026</span></div>
+        <div class="sec-hd">Criativos <span id="adsLbl">— período selecionado</span></div>
         <div class="stabs">
           <button class="stab clt active" onclick="switchS('ads','clt',this)">CLT</button>
           <button class="stab fgts" onclick="switchS('ads','fgts',this)">FGTS</button>
@@ -727,17 +727,20 @@ function buildAds(){
   ['CLT','FGTS'].forEach(p=>{
     const el=document.getElementById('ag'+p);
     el.innerHTML='';
-    const adList=(ADS_DATA[p]&&ADS_DATA[p].length>0)?ADS_DATA[p]:(ADS[p]||[]);
+    const adList=(ADS_DATA[p]&&ADS_DATA[p].length>0)?ADS_DATA[p]:[];
+    if(adList.length===0){
+      el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px">Nenhum criativo disponível</div>';
+      return;
+    }
     adList.forEach(ad=>{
-      const cC=cc(ad.cpl),tC=ad.ctr>=3?G:ad.ctr>=2?'#d97706':'#9ca3af';
+      const cC=cc(ad.cpl);
       const d=document.createElement('div');d.className='ad-card';
-      const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'ad-img-placeholder\\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
-      d.innerHTML=`${img}<div class="ad-info"><div class="ad-name">${ad.n}</div><div class="ad-stats"><div><div class="as-l">Leads</div><div class="as-v">${fN(ad.leads)}</div></div><div><div class="as-l">CTR</div><div class="as-v" style="color:${tC}">${ad.ctr.toFixed(2)}%</div></div><div><div class="as-l">CPL</div><div class="as-v" style="color:${cC}">${fR(ad.cpl)}</div></div></div></div>`;
+      const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'ad-img-placeholder\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
+      d.innerHTML=`${img}<div class="ad-info"><div class="ad-name">${ad.n}</div><div class="ad-stats"><div><div class="as-l">Leads</div><div class="as-v">${fN(ad.leads)}</div></div><div><div class="as-l">CPL</div><div class="as-v" style="color:${cC}">${fR(ad.cpl)}</div></div></div></div>`;
       el.appendChild(d);
     });
   });
 }
-
 // ═══ DADOS GERAIS ═══════════════════════════════════
 // Q ranges (3 months each)
 const QR={
