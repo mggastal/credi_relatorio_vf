@@ -37,13 +37,14 @@ def load_sheet():
         'Spend (Cost, Amount Spent)': 'spend',
         'Impressions': 'impressions',
         'Clicks': 'clicks',
+        'Action Link Clicks': 'link_clicks',
         'Action Messaging Conversations Started (Onsite Conversion)': 'leads',
     }
     df = df.rename(columns={k: v for k, v in col_map.items() if k in df.columns})
 
     # Tipos — tratando vírgula como decimal (padrão brasileiro)
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
-    for c in ['spend', 'leads', 'impressions', 'clicks']:
+    for c in ['spend', 'leads', 'impressions', 'clicks', 'link_clicks']:
         if c in df.columns:
             df[c] = df[c].astype(str).str.replace(',', '.', regex=False)
             df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
@@ -70,11 +71,11 @@ def load_sheet():
 
 # ── DADOS DIÁRIOS ─────────────────────────────────────
 def build_daily(df):
-    # Filtra só campanhas de performance (com leads) para CTR/CPM
-    
+
     daily = df.groupby('date').agg(
         spend=('spend', 'sum'), leads=('leads', 'sum'),
-        impressions=('impressions', 'sum'), clicks=('clicks', 'sum')
+        impressions=('impressions', 'sum'), clicks=('clicks', 'sum'),
+        link_clicks=('link_clicks', 'sum')
     ).reset_index().sort_values('date')
 
     daily_clt = df[df['product'] == 'CLT'].groupby('date').agg(
@@ -100,12 +101,13 @@ def build_daily(df):
 
         tl = int(r['leads']); ts = float(r['spend'])
         imp = float(r['impressions']); clk = float(r['clicks'])
+        lc = float(r['link_clicks']) if 'link_clicks' in r.index else clk
 
         out['days'].append(pd.Timestamp(d).strftime('%d/%m'))
         out['spend'].append(round(ts, 2))
         out['leads'].append(tl)
         out['cpl'].append(round(ts/tl, 2) if tl > 0 else None)
-        out['ctr'].append(round(clk/imp*100, 2) if imp > 0 else None)
+        out['ctr'].append(round(lc/imp*100, 2) if imp > 0 else None)
         out['cpm'].append(round(ts/imp*1000, 2) if imp > 0 else None)
         out['cltL'].append(cl)
         out['fgtsL'].append(fl)
@@ -113,8 +115,8 @@ def build_daily(df):
         out['fgtsS'].append(fs)
         out['cltCPL'].append(round(cs/cl, 2) if cl > 0 else None)
         out['fgtsCPL'].append(round(fs/fl, 2) if fl > 0 else None)
-        cltCTR = round(clk/imp*100*(cl/tl if tl else 1), 2) if imp > 0 and tl > 0 else None
-        fgtsCTR = round(clk/imp*100*(fl/tl if tl else 0), 2) if imp > 0 and tl > 0 and fl > 0 else None
+        cltCTR = round(lc/imp*100*(cl/tl if tl else 1), 2) if imp > 0 and tl > 0 else None
+        fgtsCTR = round(lc/imp*100*(fl/tl if tl else 0), 2) if imp > 0 and tl > 0 and fl > 0 else None
         out['cltCTR'].append(cltCTR)
         out['fgtsCTR'].append(fgtsCTR)
 
