@@ -7,6 +7,8 @@ Lê a planilha do Google Sheets (Stract) e gera o HTML atualizado.
 import pandas as pd
 import json
 import re
+import hashlib
+import requests
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -17,6 +19,26 @@ OUTPUT_FILE = "index.html"
 TEMPLATE_FILE = "template_base.html"
 
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_TAB}"
+
+
+# ── DOWNLOAD DE IMAGENS ───────────────────────────────
+def download_thumb(url, img_dir):
+    if not url or str(url) == "nan":
+        return ""
+    try:
+        ext = ".png" if ".png" in url.lower() else ".jpg"
+        fname = hashlib.md5(url.encode()).hexdigest()[:16] + ext
+        fpath = img_dir / fname
+        if not fpath.exists():
+            r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+            if r.status_code == 200:
+                fpath.write_bytes(r.content)
+            else:
+                return ""
+        return "imgs/" + fname
+    except:
+        return ""
+
 
 # ── LER PLANILHA ──────────────────────────────────────
 def load_sheet():
@@ -222,66 +244,93 @@ def build_monthly(df):
     return data
 
 
-# ── CAMPANHAS POR MÊS ─────────────────────────────────
-def build_camps(df):
-    all_months = sorted(df['ym'].unique())
-    target_months = all_months[-6:]
-    result = {}
+# ── CAMPANHAS POR PERÍODO ─────────────────────────────
+def build_camps_for_period(df, start_dt, end_dt, all_months, period_key):
+    """Constrói ranking de campanhas para um período específico de datas."""
+    p = df[(df['date'] >= pd.Timestamp(start_dt)) & (df['date'] <= pd.Timestamp(end_dt))]
+    if len(p) == 0:
+        return []
 
-    for ym in target_months:
-        p = df[df['ym'] == ym]
-        camps = p.groupby(['campaign', 'product']).agg(
+    camps = p.groupby(['campaign', 'product']).agg(
+        spend=('spend','sum'), leads=('leads','sum'),
+        impressions=('impressions','sum'), link_clicks=('link_clicks','sum')
+    ).reset_index()
+    camps['cpl'] = (camps['spend']/camps['leads']).where(camps['leads']>0).round(2)
+    camps['cpm'] = (camps['spend']/camps['impressions']*1000).where(camps['impressions']>0).round(2)
+    camps['ctr'] = (camps['link_clicks']/camps['impressions']*100).where(camps['impressions']>0).round(2)
+    camps = camps.sort_values('leads', ascending=False).head(12)
+
+    # Sparkline: CPL mensal dos últimos 6 meses (apenas para campanha, não conjunto)
+    cur_ym = pd.Period(end_dt, 'M')
+    cur_idx = list(all_months).index(cur_ym) if cur_ym in all_months else len(all_months)-1
+    spk_months = all_months[max(0, cur_idx-5):cur_idx+1]
+
+    out = []
+    for _, r in camps.iterrows():
+        adsets = p[p['campaign'] == r['campaign']].groupby('adset').agg(
             spend=('spend','sum'), leads=('leads','sum'),
             impressions=('impressions','sum'), link_clicks=('link_clicks','sum')
         ).reset_index()
-        camps['cpl'] = (camps['spend']/camps['leads']).where(camps['leads']>0).round(2)
-        camps['cpm'] = (camps['spend']/camps['impressions']*1000).where(camps['impressions']>0).round(2)
-        camps['ctr'] = (camps['link_clicks']/camps['impressions']*100).where(camps['impressions']>0).round(2)
-        camps = camps.sort_values('leads', ascending=False).head(12)
+        adsets['cpl'] = (adsets['spend']/adsets['leads']).where(adsets['leads']>0).round(2)
+        adsets['cpm'] = (adsets['spend']/adsets['impressions']*1000).where(adsets['impressions']>0).round(2)
+        adsets['ctr'] = (adsets['link_clicks']/adsets['impressions']*100).where(adsets['impressions']>0).round(2)
+        adsets = adsets.sort_values('leads', ascending=False)
 
-        cur_idx = list(all_months).index(ym)
-        spk_months = all_months[max(0, cur_idx-5):cur_idx+1]
+        spk = []
+        for sm in spk_months:
+            cm = df[(df['ym']==sm) & (df['campaign']==r['campaign'])]
+            ts2 = float(cm['spend'].sum()); tl2 = float(cm['leads'].sum())
+            spk.append(round(ts2/tl2, 2) if tl2 > 0 else None)
 
-        out = []
-        for _, r in camps.iterrows():
-            adsets = p[p['campaign'] == r['campaign']].groupby('adset').agg(
-                spend=('spend','sum'), leads=('leads','sum'),
-                impressions=('impressions','sum'), link_clicks=('link_clicks','sum')
-            ).reset_index()
-            adsets['cpl'] = (adsets['spend']/adsets['leads']).where(adsets['leads']>0).round(2)
-            adsets['cpm'] = (adsets['spend']/adsets['impressions']*1000).where(adsets['impressions']>0).round(2)
-            adsets['ctr'] = (adsets['link_clicks']/adsets['impressions']*100).where(adsets['impressions']>0).round(2)
-            adsets = adsets.sort_values('leads', ascending=False)
-
-            spk = []
-            for sm in spk_months:
-                cm = df[(df['ym']==sm) & (df['campaign']==r['campaign'])]
-                ts2 = float(cm['spend'].sum()); tl2 = float(cm['leads'].sum())
-                spk.append(round(ts2/tl2, 2) if tl2 > 0 else None)
-
-            conjs = []
-            for _, a in adsets.iterrows():
-                conjs.append({
-                    'n': str(a['adset']),
-                    'spend': round(float(a['spend']), 2),
-                    'leads': int(a['leads']),
-                    'cpl': float(a['cpl']) if pd.notna(a['cpl']) else None,
-                    'cpm': float(a['cpm']) if pd.notna(a['cpm']) else None,
-                    'ctr': float(a['ctr']) if pd.notna(a['ctr']) else None,
-                })
-
-            out.append({
-                'n': str(r['campaign']),
-                'product': str(r['product']),
-                'spend': round(float(r['spend']), 2),
-                'leads': int(r['leads']),
-                'cpl': float(r['cpl']) if pd.notna(r['cpl']) else None,
-                'cpm': float(r['cpm']) if pd.notna(r['cpm']) else None,
-                'ctr': float(r['ctr']) if pd.notna(r['ctr']) else None,
-                'spk': spk,
-                'conjs': conjs,
+        conjs = []
+        for _, a in adsets.iterrows():
+            conjs.append({
+                'n': str(a['adset']),
+                'spend': round(float(a['spend']), 2),
+                'leads': int(a['leads']),
+                'cpl': float(a['cpl']) if pd.notna(a['cpl']) else None,
+                'cpm': float(a['cpm']) if pd.notna(a['cpm']) else None,
+                'ctr': float(a['ctr']) if pd.notna(a['ctr']) else None,
+                # Sem sparkline nos conjuntos
             })
-        result[str(ym)] = out
+
+        out.append({
+            'n': str(r['campaign']),
+            'product': str(r['product']),
+            'spend': round(float(r['spend']), 2),
+            'leads': int(r['leads']),
+            'cpl': float(r['cpl']) if pd.notna(r['cpl']) else None,
+            'cpm': float(r['cpm']) if pd.notna(r['cpm']) else None,
+            'ctr': float(r['ctr']) if pd.notna(r['ctr']) else None,
+            'spk': spk,
+            'conjs': conjs,
+        })
+    return out
+
+
+def build_camps(df):
+    """Gera campanhas para todos os períodos: 1d, 7d, 14d, 30d e meses fechados."""
+    all_months = sorted(df['ym'].unique())
+    last = df['date'].max()
+    result = {}
+
+    # Períodos rolling
+    for n in [1, 7, 14, 30]:
+        start = last - pd.Timedelta(days=n-1)
+        result[str(n)] = build_camps_for_period(df, start, last, all_months, str(n))
+        print(f"   {n}d: {len(result[str(n)])} campanhas")
+
+    # Meses fechados
+    for ym_str in ['2026-04','2026-03','2026-02','2026-01','2025-12','2025-11','2025-10','2025-09']:
+        try:
+            ym = pd.Period(ym_str, 'M')
+            if ym not in all_months:
+                continue
+            start = ym.start_time; end = min(ym.end_time, last)
+            result[ym_str] = build_camps_for_period(df, start, end, all_months, ym_str)
+            print(f"   {ym_str}: {len(result[ym_str])} campanhas")
+        except Exception as e:
+            print(f"   {ym_str}: erro {e}")
 
     return result
 
@@ -296,7 +345,7 @@ def build_mes_days(df):
 
 
 # ── INJETAR NO HTML ───────────────────────────────────
-def inject_data(template_path, daily, last_day, monthly, camps, mes_days, kpis):
+def inject_data(template_path, daily, last_day, monthly, camps, mes_days, kpis, ads_data):
     html = Path(template_path).read_text(encoding='utf-8')
 
     def replace_js_const(html, const_name, value):
@@ -312,6 +361,7 @@ def inject_data(template_path, daily, last_day, monthly, camps, mes_days, kpis):
     html = replace_js_const(html, 'CAMPS_MES', camps)
     html = replace_js_const(html, 'MES_DAYS', mes_days)
     html = replace_js_const(html, 'KPIS_PERIODO', kpis)
+    html = replace_js_const(html, 'ADS_DATA', ads_data)
 
     html = re.sub(r'Dados até \d{2}/\d{2}', f'Dados até {last_day}', html)
     today_str = date.today().strftime('%d/%m/%Y')
@@ -344,12 +394,25 @@ def main():
     print("🔧 Dias por mês...")
     mes_days = build_mes_days(df)
 
-    print("📝 Gerando HTML...")
+    print("Baixando imagens dos criativos...")
+    img_dir = Path("imgs")
+    img_dir.mkdir(exist_ok=True)
+    df_ads = df[df["thumb"].notna() & (df["thumb"].astype(str) != "") & (df["thumb"].astype(str) != "nan")].copy()
+    ads_agg = df_ads.groupby(["ad","product","thumb"]).agg(leads=("leads","sum"), spend=("spend","sum")).reset_index().sort_values("leads", ascending=False)
+    ads_data = {"CLT": [], "FGTS": []}
+    for prod, n_top in [("CLT", 8), ("FGTS", 6)]:
+        for _, r in ads_agg[ads_agg["product"]==prod].head(n_top).iterrows():
+            local = download_thumb(str(r["thumb"]), img_dir)
+            tL = int(r["leads"]); tS = float(r["spend"])
+            ads_data[prod].append({"n": str(r["ad"]), "leads": tL, "cpl": round(tS/tL,2) if tL>0 else None, "thumb": local})
+    print(f"   CLT: {len(ads_data['CLT'])} | FGTS: {len(ads_data['FGTS'])}")
+
+        print("📝 Gerando HTML...")
     if not Path(TEMPLATE_FILE).exists():
         print(f"❌ Template não encontrado: {TEMPLATE_FILE}")
         return
 
-    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days, kpis)
+    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days, kpis, ads_data)
     Path(OUTPUT_FILE).write_text(html, encoding='utf-8')
     print(f"✅ Dashboard gerado: {OUTPUT_FILE} ({len(html)//1024}KB)")
     print("=" * 50)
