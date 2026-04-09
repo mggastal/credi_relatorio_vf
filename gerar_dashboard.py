@@ -13,7 +13,7 @@ from pathlib import Path
 # ── CONFIG ────────────────────────────────────────────
 SHEET_ID = "1L3bUusX8nwynFcBxWW_9l-ouLVwOEy5IMuA8w5CI7xA"
 SHEET_TAB = "meta-ads"
-OUTPUT_FILE = "dashboard.html"
+OUTPUT_FILE = "index.html"
 TEMPLATE_FILE = "template_base.html"
 
 # URL pública CSV do Google Sheets
