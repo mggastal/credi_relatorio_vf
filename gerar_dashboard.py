@@ -24,6 +24,9 @@ def load_sheet():
     print(f"📥 Lendo planilha: {SHEET_URL}")
     df = pd.read_csv(SHEET_URL)
 
+    # Printar colunas para diagnóstico
+    print(f"📋 Colunas encontradas: {list(df.columns)}")
+
     # Normalizar nomes de colunas
     col_map = {
         'Date': 'date',
@@ -38,10 +41,11 @@ def load_sheet():
     }
     df = df.rename(columns={k: v for k, v in col_map.items() if k in df.columns})
 
-    # Tipos
+    # Tipos — tratando vírgula como decimal (padrão brasileiro)
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     for c in ['spend', 'leads', 'impressions', 'clicks']:
         if c in df.columns:
+            df[c] = df[c].astype(str).str.replace(',', '.', regex=False)
             df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
 
     # Produto
@@ -50,7 +54,12 @@ def load_sheet():
 
     # Remover linhas sem data
     df = df.dropna(subset=['date'])
-    print(f"✅ {len(df)} linhas carregadas | {df['date'].min().date()} → {df['date'].max().date()}")
+
+    # Validação
+    total_spend = df['spend'].sum()
+    total_leads = df['leads'].sum()
+    print(f"✅ {len(df)} linhas | {df['date'].min().date()} → {df['date'].max().date()}")
+    print(f"💰 Total spend: R${total_spend:,.2f} | Total leads: {int(total_leads):,}")
     return df
 
 
