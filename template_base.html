@@ -323,6 +323,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <script>
 // ═══ DADOS REAIS ══════════════════════════════════════
 const KPIS_PERIODO={};
+const ADS_DATA={"CLT":[],"FGTS":[]};
 const DAILY={
   days:["20/01","21/01","22/01","23/01","24/01","26/01","27/01","28/01","29/01","30/01","02/02","03/02","04/02","05/02","06/02","09/02","10/02","11/02","12/02","13/02","16/02","19/02","20/02","23/02","24/02","25/02","26/02","27/02","02/03","03/03","04/03","05/03","06/03","09/03","10/03","11/03","12/03","13/03","14/03","15/03","16/03","17/03","18/03","19/03","20/03","21/03","22/03","23/03","24/03","25/03","26/03","27/03","28/03","29/03","30/03","31/03","01/04","02/04","03/04","04/04"],
   spend:[1012.13,598.11,365.13,2247.27,309.09,924.89,1938.46,2093.45,2027.11,1675.04,1426.65,1381.25,1210.78,1169.24,1032.11,1088.24,1269.11,1185.75,1348.07,620.76,25.15,1596.79,1057.99,1276.15,1073.49,1587.57,1225.76,991.21,1433.17,411.37,425.76,624.87,583.82,922.24,1464.92,1255.14,1900.31,1546.37,16.02,18.12,1468.7,1259.19,1253.05,1505.79,1037.53,18.51,16.68,1361.95,796.51,768.64,790.02,796.71,739.42,17.47,762.18,816.42,818.71,811.77,161.61,22.11],
@@ -474,11 +475,10 @@ function getIdxs(){
 }
 function sl(arr,idxs){return idxs.map(i=>arr[i]);}
 
-// Current camp ym
-function getCampYm(){
+// Current camp period key
+function getCampKey(){
   if(mesMode) return mesMode;
-  if(period<=4) return '2026-04';
-  return '2026-03';
+  return String(period);
 }
 
 function render(){
@@ -567,8 +567,9 @@ function render(){
   dc('chCPM');
   CH['chCPM']=new Chart(document.getElementById('chCPM'),{type:'line',data:{labels:days,datasets:[{label:'CPM',data:cpm,borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2}]},options:{...bo(),scales:{x:{ticks:{color:TXT,font:bf,maxTicksLimit:8},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf,callback:v=>'R$'+v.toFixed(0)},grid:{color:GRID},min:0}}}});
 
-  const ym=getCampYm();
-  const lbl=mesMode?({  '2026-04':'Abr/26','2026-03':'Mar/26','2026-02':'Fev/26','2026-01':'Jan/26','2025-12':'Dez/25','2025-11':'Nov/25'}[mesMode]||mesMode):`últimos ${period} dias`;
+  const ym=getCampKey();
+  const mesLbls={'2026-04':'Abr/26','2026-03':'Mar/26','2026-02':'Fev/26','2026-01':'Jan/26','2025-12':'Dez/25','2025-11':'Nov/25','2025-10':'Out/25','2025-09':'Set/25'};
+  const lbl=mesMode?(mesLbls[mesMode]||mesMode):`últimos ${period} dias`;
   document.getElementById('campLbl').textContent=`— ${lbl}`;
 
   buildCampTable();
@@ -578,8 +579,8 @@ function render(){
 // ═══ CAMP TABLE + SPARKLINES ══════════════════════════
 const OPEN=new Set();
 function buildCampTable(){
-  const ym=getCampYm();
-  const camps=CAMPS_MES[ym]||[];
+  const ym=getCampKey();
+  const camps=CAMPS_MES[ym]||CAMPS_MES['30']||[];
   const data=campF==='all'?camps:camps.filter(c=>c.product===campF);
 
   // For months without daily data, show accordion by month
@@ -618,7 +619,7 @@ function buildCampTable(){
           <td class="num ${cls(j.cpl)}">${fR(j.cpl)}</td>
           <td class="num" style="color:var(--muted2)">${fR(j.cpm)}</td>
           <td class="num" style="color:${(j.ctr||0)>=3?G:(j.ctr||0)>=2?'#d97706':'#9ca3af'}">${j.ctr!=null?j.ctr.toFixed(2)+'%':'—'}</td>
-          <td><canvas id="spk-${jid}" width="72" height="28"></canvas></td>
+          <td></td>
         </tr>`;
       });
     }
@@ -726,7 +727,8 @@ function buildAds(){
   ['CLT','FGTS'].forEach(p=>{
     const el=document.getElementById('ag'+p);
     el.innerHTML='';
-    ADS[p].forEach(ad=>{
+    const adList=(ADS_DATA[p]&&ADS_DATA[p].length>0)?ADS_DATA[p]:(ADS[p]||[]);
+    adList.forEach(ad=>{
       const cC=cc(ad.cpl),tC=ad.ctr>=3?G:ad.ctr>=2?'#d97706':'#9ca3af';
       const d=document.createElement('div');d.className='ad-card';
       const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'ad-img-placeholder\\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
