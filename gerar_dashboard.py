@@ -37,7 +37,7 @@ def load_sheet():
         'Spend (Cost, Amount Spent)': 'spend',
         'Impressions': 'impressions',
         'Clicks': 'clicks',
-        'Action Link Click': 'link_clicks',
+        'Action Link Clicks': 'link_clicks',
         'Action Messaging Conversations Started (Onsite Conversion)': 'leads',
     }
     df = df.rename(columns={k: v for k, v in col_map.items() if k in df.columns})
