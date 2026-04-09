@@ -69,12 +69,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .cf-btn{padding:5px 13px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
 .cf-btn.active{background:#0f1523;border-color:#0f1523;color:#fff;}
 /* CHARTS */
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh);}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh);min-width:0;overflow:hidden;}
 .cc-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:2px;}
 .cc-sub{font-size:11px;color:var(--muted);margin-bottom:12px;}
-.cw{position:relative;width:100%;overflow:hidden;}
+.cw{position:relative;width:100%;overflow:hidden;max-width:100%;}
 .chart-main{margin-bottom:12px;}
-.chart-sub-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.chart-sub-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;min-width:0;}
 /* SECTION */
 .section{margin-bottom:18px;}
 .sec-hd{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
@@ -136,6 +136,22 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .rank-bar{width:50px;height:3px;background:var(--bg);border-radius:2px;overflow:hidden;flex-shrink:0;}
 .rank-bar-f{height:100%;border-radius:2px;}
 .rank-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;flex-shrink:0;}
+/* MOBILE */
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;}
+  .sb{display:none;position:fixed;top:0;left:0;width:260px;height:100vh;z-index:200;overflow-y:auto;}
+  .sb.open{display:flex;}
+  .mob-menu{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:18px;flex-shrink:0;}
+  .topbar{flex-wrap:wrap;gap:8px;}
+  .period-bar{flex-wrap:wrap;}
+  .kpi-strip{grid-template-columns:repeat(2,1fr)!important;}
+  .prod-metrics{grid-template-columns:repeat(2,1fr)!important;}
+  .chart-sub-row{grid-template-columns:1fr!important;}
+  .ranking-row{grid-template-columns:1fr!important;}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;}
+  .overlay.open{display:block;}
+}
+@media(min-width:769px){.mob-menu{display:none;}}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
@@ -306,6 +322,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 </div>
 <script>
 // ═══ DADOS REAIS ══════════════════════════════════════
+const KPIS_PERIODO={};
 const DAILY={
   days:["20/01","21/01","22/01","23/01","24/01","26/01","27/01","28/01","29/01","30/01","02/02","03/02","04/02","05/02","06/02","09/02","10/02","11/02","12/02","13/02","16/02","19/02","20/02","23/02","24/02","25/02","26/02","27/02","02/03","03/03","04/03","05/03","06/03","09/03","10/03","11/03","12/03","13/03","14/03","15/03","16/03","17/03","18/03","19/03","20/03","21/03","22/03","23/03","24/03","25/03","26/03","27/03","28/03","29/03","30/03","31/03","01/04","02/04","03/04","04/04"],
   spend:[1012.13,598.11,365.13,2247.27,309.09,924.89,1938.46,2093.45,2027.11,1675.04,1426.65,1381.25,1210.78,1169.24,1032.11,1088.24,1269.11,1185.75,1348.07,620.76,25.15,1596.79,1057.99,1276.15,1073.49,1587.57,1225.76,991.21,1433.17,411.37,425.76,624.87,583.82,922.24,1464.92,1255.14,1900.31,1546.37,16.02,18.12,1468.7,1259.19,1253.05,1505.79,1037.53,18.51,16.68,1361.95,796.51,768.64,790.02,796.71,739.42,17.47,762.18,816.42,818.71,811.77,161.61,22.11],
@@ -386,8 +403,9 @@ function av(a){const v=a.filter(x=>x!=null&&x>0);return v.length?v.reduce((s,x)=
 function cc(v){return v==null?GR:v<=1.5?G:v<=2.5?'#d97706':O;}
 function cls(v){return v==null?'':v<=1.5?'cg':v<=2.5?'cw2':'cr';}
 function fR(v){if(v==null||isNaN(v))return '—';return 'R$'+Number(v).toFixed(2).replace('.',',');}
+function fR2(v){if(v==null||isNaN(v))return '—';return 'R$'+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fN(v){return Number(v).toLocaleString('pt-BR');}
-function bo(){return{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:TXT,font:bf,boxWidth:9,padding:10}},tooltip:{backgroundColor:'#0f1523',borderColor:'rgba(255,255,255,.08)',borderWidth:1,titleFont:{size:10},bodyFont:{size:10}}},scales:{x:{ticks:{color:TXT,font:bf},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf},grid:{color:GRID}}}};}
+function bo(){return{responsive:true,maintainAspectRatio:false,resizeDelay:50,plugins:{legend:{labels:{color:TXT,font:bf,boxWidth:9,padding:10}},tooltip:{backgroundColor:'#0f1523',borderColor:'rgba(255,255,255,.08)',borderWidth:1,titleFont:{size:10},bodyFont:{size:10}}},scales:{x:{ticks:{color:TXT,font:bf},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf},grid:{color:GRID}}}};}
 function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
 
 function showPage(p,btn){
@@ -472,50 +490,54 @@ function render(){
   const cltCPL=sl(DAILY.cltCPL,idxs),fgtsCPL=sl(DAILY.fgtsCPL,idxs);
   const cltCTR=sl(DAILY.cltCTR,idxs),fgtsCTR=sl(DAILY.fgtsCTR,idxs);
 
-  const tS=sm(spend),tL=sm(leads);
-  const avgCPL=tL>0?tS/tL:0,avgCTR=av(ctr),avgCPM=av(cpm);
-  const cltSpT=sm(cltS),fgtsSpT=sm(fgtsS),cltLT=sm(cltL),fgtsLT=sm(fgtsL);
-  const cltCPLav=cltLT>0?cltSpT/cltLT:0,fgtsCPLav=fgtsLT>0?fgtsSpT/fgtsLT:0;
+  const kKey=mesMode||String(period);
+  const K=KPIS_PERIODO[kKey]||{};
+  const tS=K.spend!=null?K.spend:sm(spend);
+  const tL=K.leads!=null?K.leads:sm(leads);
+  const avgCPL=K.cpl!=null?K.cpl:(tL>0?tS/tL:0);
+  const avgCTR=K.ctr!=null?K.ctr:0;
+  const avgCPM=K.cpm!=null?K.cpm:0;
+  const cltSpT=K.cltSpend!=null?K.cltSpend:sm(cltS);
+  const cltLT=K.cltLeads!=null?K.cltLeads:sm(cltL);
+  const fgtsSpT=K.fgtsSpend!=null?K.fgtsSpend:sm(fgtsS);
+  const fgtsLT=K.fgtsLeads!=null?K.fgtsLeads:sm(fgtsL);
+  const cltCPLav=K.cltCpl!=null?K.cltCpl:(cltLT>0?cltSpT/cltLT:0);
+  const fgtsCPLav=K.fgtsCpl!=null?K.fgtsCpl:(fgtsLT>0?fgtsSpT/fgtsLT:0);
+  const cltCTRav=K.cltCtr!=null?K.cltCtr:0;
+  const fgtsCTRav=K.fgtsCtr!=null?K.fgtsCtr:0;
 
   if(days.length){
     document.getElementById('sbDates').textContent=days[0]+(days.length>1?' → '+days[days.length-1]:'');
   }
 
-  // Prev period dots
-  let prevS=null,prevL=null,prevCPL=null,prevCTR=null,prevCPM=null;
-  if(!mesMode){
-    const n=period;
-    const pi=DAILY.days.map((_,i)=>i).slice(-Math.min(n*2,DAILY.days.length),-n);
-    if(pi.length){
-      const ps=sl(DAILY.spend,pi),pl=sl(DAILY.leads,pi);
-      prevS=sm(ps);prevL=sm(pl);
-      prevCPL=prevL>0?prevS/prevL:null;
-      prevCTR=av(sl(DAILY.ctr,pi));prevCPM=av(sl(DAILY.cpm,pi));
-    }
+
+  function dot(c,p,fmt,lb){
+    if(!p||!c)return '';
+    const ok=lb?c<p:c>p;
+    return `<div class="kpi-prev"><div class="kpi-prev-dot" style="background:${ok?G:O}"></div><div class="kpi-prev-lbl">Ant: ${fmt(p)}</div></div>`;
   }
-function dot(c,p,fmt,lb){ return ''; }
 
   document.getElementById('kpiStrip').innerHTML=`
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Investimento</div><div class="kpi-val">R$${(tS/1000).toFixed(1)}k</div>${dot(tS,prevS,v=>'R$'+(v/1000).toFixed(1)+'k',false)}</div>
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Leads</div><div class="kpi-val">${fN(tL)}</div>${dot(tL,prevL,fN,false)}</div>
-    <div class="kpi" style="--kc:${cc(avgCPL)}"><div class="kpi-lbl">CPL Médio</div><div class="kpi-val">${fR(avgCPL)}</div>${dot(avgCPL,prevCPL,fR,true)}</div>
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">CTR Médio</div><div class="kpi-val">${avgCTR.toFixed(2)}%</div>${dot(avgCTR,prevCTR,v=>v.toFixed(2)+'%',false)}</div>
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">CPM Médio</div><div class="kpi-val">${fR(avgCPM)}</div>${dot(avgCPM,prevCPM,fR,true)}</div>`;
+    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Investimento</div><div class="kpi-val" style="font-size:15px">${fR2(tS)}</div></div>
+    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Leads</div><div class="kpi-val">${fN(tL)}</div></div>
+    <div class="kpi" style="--kc:${cc(avgCPL)}"><div class="kpi-lbl">CPL Médio</div><div class="kpi-val">${fR(avgCPL)}</div></div>
+    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">CTR Médio</div><div class="kpi-val">${avgCTR.toFixed(2)}%</div></div>
+    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">CPM Médio</div><div class="kpi-val">${fR(avgCPM)}</div></div>`;
 
   document.getElementById('prodRow').innerHTML=`
     <div class="prod-card clt"><div class="prod-hd"><div class="prod-dot" style="background:${G}"></div><div class="prod-lbl" style="color:${G}">CLT</div></div>
     <div class="prod-metrics">
-      <div><div class="pm-lbl">Investimento</div><div class="pm-val">R$${(cltSpT/1000).toFixed(1)}k</div></div>
+      <div><div class="pm-lbl">Investimento</div><div class="pm-val" style="font-size:14px">${fR2(cltSpT)}</div></div>
       <div><div class="pm-lbl">Leads</div><div class="pm-val">${fN(cltLT)}</div></div>
       <div><div class="pm-lbl">CPL</div><div class="pm-val" style="color:${cc(cltCPLav)}">${fR(cltCPLav)}</div></div>
-      <div><div class="pm-lbl">CTR</div><div class="pm-val">${av(cltCTR.filter(v=>v)).toFixed(2)}%</div></div>
+      <div><div class="pm-lbl">CTR</div><div class="pm-val">${cltCTRav.toFixed(2)}%</div></div>
     </div></div>
     <div class="prod-card fgts"><div class="prod-hd"><div class="prod-dot" style="background:${O}"></div><div class="prod-lbl" style="color:${O}">FGTS</div></div>
     <div class="prod-metrics">
-      <div><div class="pm-lbl">Investimento</div><div class="pm-val">R$${(fgtsSpT/1000).toFixed(1)}k</div></div>
+      <div><div class="pm-lbl">Investimento</div><div class="pm-val" style="font-size:14px">${fR2(fgtsSpT)}</div></div>
       <div><div class="pm-lbl">Leads</div><div class="pm-val">${fN(fgtsLT)}</div></div>
       <div><div class="pm-lbl">CPL</div><div class="pm-val" style="color:${cc(fgtsCPLav)}">${fR(fgtsCPLav)}</div></div>
-      <div><div class="pm-lbl">CTR</div><div class="pm-val">${av(fgtsCTR.filter(v=>v)).toFixed(2)||'—'}%</div></div>
+      <div><div class="pm-lbl">CTR</div><div class="pm-val">${fgtsCTRav.toFixed(2)}%</div></div>
     </div></div>`;
 
   // Main chart
@@ -848,6 +870,20 @@ function buildGeralPubTable(){
 
 render();
 buildAds();
+</script>
+<script>
+function toggleSidebar(){
+  document.querySelector('.sb').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.querySelector('.sb').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+}
+// Close sidebar when clicking a menu item on mobile
+document.querySelectorAll('.sb-item').forEach(function(el){
+  el.addEventListener('click',function(){ if(window.innerWidth<=768) closeSidebar(); });
+});
 </script>
 </body>
 </html>

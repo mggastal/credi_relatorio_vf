@@ -7,7 +7,7 @@ Lê a planilha do Google Sheets (Stract) e gera o HTML atualizado.
 import pandas as pd
 import json
 import re
-from datetime import datetime, date
+from datetime import date, timedelta
 from pathlib import Path
 
 # ── CONFIG ────────────────────────────────────────────
@@ -16,18 +16,13 @@ SHEET_TAB = "meta-ads"
 OUTPUT_FILE = "index.html"
 TEMPLATE_FILE = "template_base.html"
 
-# URL pública CSV do Google Sheets
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_TAB}"
 
 # ── LER PLANILHA ──────────────────────────────────────
 def load_sheet():
-    print(f"📥 Lendo planilha: {SHEET_URL}")
+    print(f"📥 Lendo planilha...")
     df = pd.read_csv(SHEET_URL)
 
-    # Printar colunas para diagnóstico
-    print(f"📋 Colunas encontradas: {list(df.columns)}")
-
-    # Normalizar nomes de colunas
     col_map = {
         'Date': 'date',
         'Campaign Name': 'campaign',
@@ -42,36 +37,43 @@ def load_sheet():
     }
     df = df.rename(columns={k: v for k, v in col_map.items() if k in df.columns})
 
-    # Tipos — tratando vírgula como decimal (padrão brasileiro)
     df['date'] = pd.to_datetime(df['date'], errors='coerce')
     for c in ['spend', 'leads', 'impressions', 'clicks', 'link_clicks']:
         if c in df.columns:
-            df[c] = df[c].astype(str).str.replace(',', '.', regex=False)
-            df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
+            df[c] = pd.to_numeric(df[c].astype(str).str.replace(',', '.', regex=False), errors='coerce').fillna(0)
 
-    # Produto
     df['product'] = df['campaign'].apply(lambda c: 'FGTS' if 'FGTS' in str(c).upper() else 'CLT')
     df['ym'] = df['date'].dt.to_period('M')
-
-    # Remover linhas sem data
     df = df.dropna(subset=['date'])
 
-    # Validação
-    total_spend = df['spend'].sum()
-    total_leads = df['leads'].sum()
-    print(f"✅ {len(df)} linhas | {df['date'].min().date()} → {df['date'].max().date()}")
-    print(f"💰 Total spend: R${df['spend'].sum():,.2f}")
-    print(f"👥 Total leads: {int(df['leads'].sum()):,}")
-    print(f"👁️ Total impressões: {int(df['impressions'].sum()):,}")
-    print(f"🖱️ Total cliques: {int(df['clicks'].sum()):,}")
-    print(f"📊 Colunas disponíveis: {list(df.columns)}")
-    print(f"📌 Amostra spend (5 linhas): {df['spend'].head().tolist()}")
+    last = df['date'].max()
+    print(f"✅ {len(df)} linhas | {df['date'].min().date()} → {last.date()}")
+    print(f"💰 Spend total: R${df['spend'].sum():,.2f} | Leads: {int(df['leads'].sum()):,}")
     return df
+
+
+# ── AGREGAÇÃO POR PERÍODO ──────────────────────────────
+def agg_period(df, start_dt, end_dt):
+    """Agrega métricas para um período de datas (inclusive)."""
+    mask = (df['date'] >= pd.Timestamp(start_dt)) & (df['date'] <= pd.Timestamp(end_dt))
+    p = df[mask]
+    tS = float(p['spend'].sum())
+    tL = int(p['leads'].sum())
+    imp = float(p['impressions'].sum())
+    lc = float(p['link_clicks'].sum())
+    return {
+        'spend': round(tS, 2),
+        'leads': tL,
+        'cpl': round(tS/tL, 2) if tL > 0 else None,
+        'ctr': round(lc/imp*100, 2) if imp > 0 else None,
+        'cpm': round(tS/imp*1000, 2) if imp > 0 else None,
+        'impressions': int(imp),
+        'link_clicks': int(lc),
+    }
 
 
 # ── DADOS DIÁRIOS ─────────────────────────────────────
 def build_daily(df):
-
     daily = df.groupby('date').agg(
         spend=('spend', 'sum'), leads=('leads', 'sum'),
         impressions=('impressions', 'sum'), clicks=('clicks', 'sum'),
@@ -79,10 +81,15 @@ def build_daily(df):
     ).reset_index().sort_values('date')
 
     daily_clt = df[df['product'] == 'CLT'].groupby('date').agg(
-        spend=('spend', 'sum'), leads=('leads', 'sum')).reset_index()
+        spend=('spend', 'sum'), leads=('leads', 'sum'),
+        impressions=('impressions', 'sum'), link_clicks=('link_clicks', 'sum')
+    ).reset_index()
     daily_fgts = df[df['product'] == 'FGTS'].groupby('date').agg(
-        spend=('spend', 'sum'), leads=('leads', 'sum')).reset_index()
+        spend=('spend', 'sum'), leads=('leads', 'sum'),
+        impressions=('impressions', 'sum'), link_clicks=('link_clicks', 'sum')
+    ).reset_index()
 
+    # Últimos 60 dias com dados
     all_days = sorted(daily['date'].unique())[-60:]
 
     out = {k: [] for k in ['days','spend','leads','cpl','ctr','cpm',
@@ -98,10 +105,13 @@ def build_daily(df):
         fl = int(fr['leads'].sum()) if len(fr) else 0
         cs = round(float(cr['spend'].sum()), 2) if len(cr) else 0
         fs = round(float(fr['spend'].sum()), 2) if len(fr) else 0
+        cl_imp = float(cr['impressions'].sum()) if len(cr) else 0
+        fl_imp = float(fr['impressions'].sum()) if len(fr) else 0
+        cl_lc = float(cr['link_clicks'].sum()) if len(cr) else 0
+        fl_lc = float(fr['link_clicks'].sum()) if len(fr) else 0
 
         tl = int(r['leads']); ts = float(r['spend'])
-        imp = float(r['impressions']); clk = float(r['clicks'])
-        lc = float(r['link_clicks']) if 'link_clicks' in r.index else clk
+        imp = float(r['impressions']); lc = float(r['link_clicks'])
 
         out['days'].append(pd.Timestamp(d).strftime('%d/%m'))
         out['spend'].append(round(ts, 2))
@@ -115,13 +125,79 @@ def build_daily(df):
         out['fgtsS'].append(fs)
         out['cltCPL'].append(round(cs/cl, 2) if cl > 0 else None)
         out['fgtsCPL'].append(round(fs/fl, 2) if fl > 0 else None)
-        cltCTR = round(lc/imp*100*(cl/tl if tl else 1), 2) if imp > 0 and tl > 0 else None
-        fgtsCTR = round(lc/imp*100*(fl/tl if tl else 0), 2) if imp > 0 and tl > 0 and fl > 0 else None
-        out['cltCTR'].append(cltCTR)
-        out['fgtsCTR'].append(fgtsCTR)
+        out['cltCTR'].append(round(cl_lc/cl_imp*100, 2) if cl_imp > 0 else None)
+        out['fgtsCTR'].append(round(fl_lc/fl_imp*100, 2) if fl_imp > 0 else None)
 
     last_day = out['days'][-1] if out['days'] else '—'
-    return out, last_day
+    return out, last_day, all_days
+
+
+# ── KPIs POR PERÍODO (para validação e filtros) ────────
+def build_kpis_by_period(df, all_days):
+    """
+    Gera KPIs corretos para cada filtro de período.
+    Usa datas de calendário corridas a partir do último dia.
+    """
+    last = pd.Timestamp(all_days[-1])
+    kpis = {}
+
+    for n in [1, 7, 14, 30]:
+        start = last - pd.Timedelta(days=n-1)
+        p = df[(df['date'] >= start) & (df['date'] <= last)]
+        clt = p[p['product']=='CLT']
+        fgts = p[p['product']=='FGTS']
+
+        tS = float(p['spend'].sum()); tL = int(p['leads'].sum())
+        imp = float(p['impressions'].sum()); lc = float(p['link_clicks'].sum())
+        cltS = float(clt['spend'].sum()); cltL = int(clt['leads'].sum())
+        cltImp = float(clt['impressions'].sum()); cltLc = float(clt['link_clicks'].sum())
+        fgtsS = float(fgts['spend'].sum()); fgtsL = int(fgts['leads'].sum())
+        fgtsImp = float(fgts['impressions'].sum()); fgtsLc = float(fgts['link_clicks'].sum())
+
+        kpis[str(n)] = {
+            'spend': round(tS, 2), 'leads': tL,
+            'cpl': round(tS/tL, 2) if tL else None,
+            'ctr': round(lc/imp*100, 2) if imp else None,
+            'cpm': round(tS/imp*1000, 2) if imp else None,
+            'cltSpend': round(cltS, 2), 'cltLeads': cltL,
+            'cltCpl': round(cltS/cltL, 2) if cltL else None,
+            'cltCtr': round(cltLc/cltImp*100, 2) if cltImp else None,
+            'fgtsSpend': round(fgtsS, 2), 'fgtsLeads': fgtsL,
+            'fgtsCpl': round(fgtsS/fgtsL, 2) if fgtsL else None,
+            'fgtsCtr': round(fgtsLc/fgtsImp*100, 2) if fgtsImp else None,
+        }
+        print(f"  {n}d: Spend R${tS:,.0f} | Leads {tL:,} | CTR {lc/imp*100:.2f}% | CPM R${tS/imp*1000:.2f}" if imp else f"  {n}d: sem dados")
+
+    # Meses fechados
+    for ym_str in ['2026-04','2026-03','2026-02','2026-01','2025-12','2025-11']:
+        try:
+            ym = pd.Period(ym_str, 'M')
+            p = df[df['ym']==ym]
+            if len(p)==0: continue
+            clt = p[p['product']=='CLT']; fgts = p[p['product']=='FGTS']
+            tS = float(p['spend'].sum()); tL = int(p['leads'].sum())
+            imp = float(p['impressions'].sum()); lc = float(p['link_clicks'].sum())
+            cltS = float(clt['spend'].sum()); cltL = int(clt['leads'].sum())
+            cltImp = float(clt['impressions'].sum()); cltLc = float(clt['link_clicks'].sum())
+            fgtsS = float(fgts['spend'].sum()); fgtsL = int(fgts['leads'].sum())
+            fgtsImp = float(fgts['impressions'].sum()); fgtsLc = float(fgts['link_clicks'].sum())
+            kpis[ym_str] = {
+                'spend': round(tS, 2), 'leads': tL,
+                'cpl': round(tS/tL, 2) if tL else None,
+                'ctr': round(lc/imp*100, 2) if imp else None,
+                'cpm': round(tS/imp*1000, 2) if imp else None,
+                'cltSpend': round(cltS, 2), 'cltLeads': cltL,
+                'cltCpl': round(cltS/cltL, 2) if cltL else None,
+                'cltCtr': round(cltLc/cltImp*100, 2) if cltImp else None,
+                'fgtsSpend': round(fgtsS, 2), 'fgtsLeads': fgtsL,
+                'fgtsCpl': round(fgtsS/fgtsL, 2) if fgtsL else None,
+                'fgtsCtr': round(fgtsLc/fgtsImp*100, 2) if fgtsImp else None,
+            }
+        except:
+            pass
+
+    return kpis
+
 
 # ── DADOS MENSAIS ─────────────────────────────────────
 def build_monthly(df):
@@ -130,23 +206,18 @@ def build_monthly(df):
 
     for m in months:
         p = df[df['ym'] == m]
-        clt = p[p['product'] == 'CLT']
-        fgts = p[p['product'] == 'FGTS']
-        cs = round(float(clt['spend'].sum()), 2)
-        fs = round(float(fgts['spend'].sum()), 2)
-        cl = int(clt['leads'].sum())
-        fl = int(fgts['leads'].sum())
+        clt = p[p['product'] == 'CLT']; fgts = p[p['product'] == 'FGTS']
+        cs = round(float(clt['spend'].sum()), 2); fs = round(float(fgts['spend'].sum()), 2)
+        cl = int(clt['leads'].sum()); fl = int(fgts['leads'].sum())
         ts = cs + fs; tl = cl + fl
 
         data['meses'].append(str(m))
         data['lbl'].append(pd.Period(m, 'M').strftime('%b/%y').capitalize())
-        data['cltS'].append(cs)
-        data['fgtsS'].append(fs)
+        data['cltS'].append(cs); data['fgtsS'].append(fs)
         data['cplG'].append(round(ts/tl, 2) if tl > 0 else None)
         data['cltCPL'].append(round(cs/cl, 2) if cl > 0 else None)
         data['fgtsCPL'].append(round(fs/fl, 2) if fl > 0 else None)
-        data['cltL'].append(cl)
-        data['fgtsL'].append(fl)
+        data['cltL'].append(cl); data['fgtsL'].append(fl)
 
     return data
 
@@ -154,7 +225,6 @@ def build_monthly(df):
 # ── CAMPANHAS POR MÊS ─────────────────────────────────
 def build_camps(df):
     all_months = sorted(df['ym'].unique())
-    # Últimos 6 meses com dados
     target_months = all_months[-6:]
     result = {}
 
@@ -162,14 +232,13 @@ def build_camps(df):
         p = df[df['ym'] == ym]
         camps = p.groupby(['campaign', 'product']).agg(
             spend=('spend','sum'), leads=('leads','sum'),
-            impressions=('impressions','sum'), clicks=('clicks','sum')
+            impressions=('impressions','sum'), link_clicks=('link_clicks','sum')
         ).reset_index()
         camps['cpl'] = (camps['spend']/camps['leads']).where(camps['leads']>0).round(2)
         camps['cpm'] = (camps['spend']/camps['impressions']*1000).where(camps['impressions']>0).round(2)
-        camps['ctr'] = (camps['clicks']/camps['impressions']*100).where(camps['impressions']>0).round(2)
+        camps['ctr'] = (camps['link_clicks']/camps['impressions']*100).where(camps['impressions']>0).round(2)
         camps = camps.sort_values('leads', ascending=False).head(12)
 
-        # Sparkline: CPL dos últimos 6 meses para cada campanha
         cur_idx = list(all_months).index(ym)
         spk_months = all_months[max(0, cur_idx-5):cur_idx+1]
 
@@ -177,14 +246,13 @@ def build_camps(df):
         for _, r in camps.iterrows():
             adsets = p[p['campaign'] == r['campaign']].groupby('adset').agg(
                 spend=('spend','sum'), leads=('leads','sum'),
-                impressions=('impressions','sum'), clicks=('clicks','sum')
+                impressions=('impressions','sum'), link_clicks=('link_clicks','sum')
             ).reset_index()
             adsets['cpl'] = (adsets['spend']/adsets['leads']).where(adsets['leads']>0).round(2)
             adsets['cpm'] = (adsets['spend']/adsets['impressions']*1000).where(adsets['impressions']>0).round(2)
-            adsets['ctr'] = (adsets['clicks']/adsets['impressions']*100).where(adsets['impressions']>0).round(2)
+            adsets['ctr'] = (adsets['link_clicks']/adsets['impressions']*100).where(adsets['impressions']>0).round(2)
             adsets = adsets.sort_values('leads', ascending=False)
 
-            # Sparkline
             spk = []
             for sm in spk_months:
                 cm = df[(df['ym']==sm) & (df['campaign']==r['campaign'])]
@@ -218,7 +286,7 @@ def build_camps(df):
     return result
 
 
-# ── DADOS DOS DIAS POR MÊS (para filtro mensal) ───────
+# ── DADOS DOS DIAS POR MÊS ────────────────────────────
 def build_mes_days(df):
     result = {}
     for ym in df['ym'].unique():
@@ -228,10 +296,9 @@ def build_mes_days(df):
 
 
 # ── INJETAR NO HTML ───────────────────────────────────
-def inject_data(template_path, daily, last_day, monthly, camps, mes_days):
+def inject_data(template_path, daily, last_day, monthly, camps, mes_days, kpis):
     html = Path(template_path).read_text(encoding='utf-8')
 
-    # Substitui os blocos de dados JS no template
     def replace_js_const(html, const_name, value):
         pattern = rf'(const {const_name}\s*=\s*)({{[\s\S]*?}}|"[^"]*"|\[[^\]]*\]);'
         replacement = f'const {const_name} = {json.dumps(value, ensure_ascii=False)};'
@@ -244,21 +311,11 @@ def inject_data(template_path, daily, last_day, monthly, camps, mes_days):
     html = replace_js_const(html, 'MONTHLY', monthly)
     html = replace_js_const(html, 'CAMPS_MES', camps)
     html = replace_js_const(html, 'MES_DAYS', mes_days)
+    html = replace_js_const(html, 'KPIS_PERIODO', kpis)
 
-    # Atualiza "Dados até XX/XX"
-    html = re.sub(
-        r'Dados até \d{2}/\d{2}',
-        f'Dados até {last_day}',
-        html
-    )
-
-    # Atualiza rodapé de última atualização
+    html = re.sub(r'Dados até \d{2}/\d{2}', f'Dados até {last_day}', html)
     today_str = date.today().strftime('%d/%m/%Y')
-    html = re.sub(
-        r'\d{2}/\d{2}/\d{4} · via planilha',
-        f'{today_str} · via planilha',
-        html
-    )
+    html = re.sub(r'\d{2}/\d{2}/\d{4} · via planilha', f'{today_str} · via planilha', html)
 
     return html
 
@@ -271,19 +328,20 @@ def main():
 
     df = load_sheet()
 
-    print("🔧 Processando dados diários...")
-    daily, last_day = build_daily(df)
+    print("🔧 Dados diários...")
+    daily, last_day, all_days = build_daily(df)
     print(f"   {len(daily['days'])} dias | último: {last_day}")
 
-    print("🔧 Processando dados mensais...")
+    print("🔧 KPIs por período...")
+    kpis = build_kpis_by_period(df, all_days)
+
+    print("🔧 Dados mensais...")
     monthly = build_monthly(df)
-    print(f"   {len(monthly['meses'])} meses")
 
-    print("🔧 Processando campanhas...")
+    print("🔧 Campanhas...")
     camps = build_camps(df)
-    print(f"   {len(camps)} meses de campanhas")
 
-    print("🔧 Mapeando dias por mês...")
+    print("🔧 Dias por mês...")
     mes_days = build_mes_days(df)
 
     print("📝 Gerando HTML...")
@@ -291,7 +349,7 @@ def main():
         print(f"❌ Template não encontrado: {TEMPLATE_FILE}")
         return
 
-    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days)
+    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days, kpis)
     Path(OUTPUT_FILE).write_text(html, encoding='utf-8')
     print(f"✅ Dashboard gerado: {OUTPUT_FILE} ({len(html)//1024}KB)")
     print("=" * 50)
