@@ -476,7 +476,7 @@ def build_gender_period(df_ga, start_dt, end_dt):
     return {"age": to_list(age_agg, "age"), "gender": to_list(gen_agg, "gender")}
 
 
-def build_breakdowns(df_ga, df_rg, df_pt, all_days):
+def build_breakdowns(df_ga, df_pt, all_days):
     """Gera todos os breakdowns para todos os períodos."""
     last = pd.Timestamp(all_days[-1])
     all_months_ga = sorted(df_ga["ym"].unique()) if not df_ga.empty and "ym" in df_ga.columns else []
@@ -558,14 +558,30 @@ def main():
     print("Imagens dos criativos...")
     img_dir = Path("imgs")
     img_dir.mkdir(exist_ok=True)
-    ads_data = build_ads(df, img_dir)
+    ads_data = build_ads(df, img_dir, all_days)
+
+    print("Carregando breakdowns...")
+    df_ga_raw = pd.read_csv(SHEET_URL_GA)
+    df_ga_raw["date"] = pd.to_datetime(df_ga_raw["Date"], errors="coerce")
+    df_ga_raw["spend"] = pd.to_numeric(df_ga_raw["Spend (Cost, Amount Spent)"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["leads"] = pd.to_numeric(df_ga_raw["Action Messaging Conversations Started (Onsite Conversion)"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["impressions"] = pd.to_numeric(df_ga_raw["Impressions"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["age"] = df_ga_raw["Age (Breakdown)"]
+    df_ga_raw["gender"] = df_ga_raw["Gender (Breakdown)"]
+    df_ga_raw["ym"] = df_ga_raw["date"].dt.to_period("M")
+    df_ga = df_ga_raw.dropna(subset=["date"])
+
+    df_pt = load_breakdown(SHEET_URL_PT, "Platform Position (Breakdown)", "platform")
+
+    print("Gerando breakdowns por periodo...")
+    breakdown_data = build_breakdowns(df_ga, df_pt, all_days)
 
     print("Gerando HTML...")
     if not Path(TEMPLATE_FILE).exists():
         print(f"Template nao encontrado: {TEMPLATE_FILE}")
         return
 
-    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days, kpis, ads_data)
+    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days, kpis, ads_data, breakdown_data)
     Path(OUTPUT_FILE).write_text(html, encoding="utf-8")
     print(f"Dashboard gerado: {OUTPUT_FILE} ({len(html)//1024}KB)")
     print("=" * 50)
