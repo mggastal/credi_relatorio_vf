@@ -1,1162 +1,620 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CREDI — Dashboard Meta Ads</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-<style>
-:root{--bg:#f0f2f7;--surface:#fff;--surface2:#f7f8fc;--border:rgba(0,0,0,0.07);--text:#0f1523;--muted:#6b7280;--muted2:#9ca3af;--green:#059669;--gbg:#ecfdf5;--gborder:#a7f3d0;--orange:#ea580c;--obg:#fff7ed;--oborder:#fdba74;--red:#dc2626;--warn:#d97706;--sh:0 1px 4px rgba(0,0,0,.06);--sh2:0 2px 12px rgba(0,0,0,.08);--r:14px;}
-[data-theme="dark"]{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2236;--border:rgba(255,255,255,0.08);--text:#f0f4ff;--muted:#8b95a9;--muted2:#5a6478;--gbg:rgba(5,150,105,.1);--gborder:rgba(5,150,105,.3);--obg:rgba(234,88,12,.1);--oborder:rgba(234,88,12,.3);--sh:0 1px 4px rgba(0,0,0,.3);--sh2:0 2px 12px rgba(0,0,0,.4);}
-[data-theme="dark"] .sb{background:#060b14;}
-[data-theme="dark"] .tc tbody tr.camp-row td{background:#1a2236;}
-[data-theme="dark"] .tc tbody tr.camp-row:hover td{background:#1f2d45;}
-[data-theme="dark"] .tc thead th{background:#1a2236;}
-[data-theme="dark"] .tc tbody td{color:var(--text);}
-[data-theme="dark"] .pb.active{background:#1a2236;}
-[data-theme="dark"] .cf-btn.active{background:#f0f4ff;color:#0a0f1e;}
-[data-theme="dark"] .ad-card{background:#111827;}
-[data-theme="dark"] .camp-card{background:#111827;}
-[data-theme="dark"] .conj-card{background:#1a2236;}
-[data-theme="dark"] .kpi-val{color:var(--text);}
-[data-theme="dark"] .pm-val{color:var(--text);}
-[data-theme="dark"] .rank-val{color:var(--text);}
-[data-theme="dark"] .page-title{color:var(--text);}
-[data-theme="dark"] .cc-title{color:var(--text);}
-[data-theme="dark"] .sec-hd{color:var(--text);}
-[data-theme="dark"]{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2236;--border:rgba(255,255,255,0.08);--text:#f0f4ff;--muted:#8b9ab0;--muted2:#4b5563;--gbg:rgba(5,150,105,.12);--gborder:rgba(5,150,105,.3);--obg:rgba(234,88,12,.12);--oborder:rgba(234,88,12,.3);--sh:0 1px 4px rgba(0,0,0,.3);--sh2:0 2px 12px rgba(0,0,0,.4);}
-[data-theme="dark"] .sb{background:#060c18;}
-[data-theme="dark"] .tc tbody tr.camp-row td{background:#1a2236;}
-[data-theme="dark"] .tc tbody tr.camp-row:hover td{background:#222f45;}
-[data-theme="dark"] .pb.active{background:#1a2236;}
-[data-theme="dark"] .cf-btn.active{background:#f0f4ff;color:#0a0f1e;}
-[data-theme="dark"] .stab.active.all{background:#f0f4ff;color:#0a0f1e;}
-[data-theme="dark"] .mes-header{background:#1a2236;}
-[data-theme="dark"] .mes-header:hover{background:#222f45;}
-[data-theme="dark"] .camp-card{background:#111827;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;overflow-y:auto;}
-.app{display:grid;grid-template-columns:210px 1fr;min-height:100vh;align-items:start;}
-.sb{background:#0f1523;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
-.sb-logo{display:flex;align-items:center;gap:10px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.07);}
-.logo-box{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#00c49a,#059669);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;font-family:'Syne',sans-serif;}
-.logo-name{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#fff;}
-.logo-sub{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:1.5px;}
-.sb-section{padding:16px 10px 4px;}
-.sb-sec-label{font-size:10px;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:2px;padding:0 8px 8px;font-weight:600;}
-.sb-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;cursor:pointer;color:rgba(255,255,255,.45);font-size:12px;font-weight:500;transition:all .15s;margin-bottom:1px;text-decoration:none;}
-.sb-item:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);}
-.sb-item.active{background:rgba(255,255,255,.1);color:#fff;}
-.sb-item .ico{font-size:14px;width:18px;text-align:center;}
-.sb-dot{width:5px;height:5px;border-radius:50%;margin-left:auto;}
-.period-info{padding:12px 18px;}
-.pi-label{font-size:10px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
-.pi-val{font-family:'Syne',sans-serif;font-size:13px;color:#00c49a;font-weight:700;}
-.pi-dates{font-size:10px;color:rgba(255,255,255,.28);margin-top:2px;}
-.sb-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.06);}
-.sb-footer div{font-size:10px;color:rgba(255,255,255,.25);margin-bottom:2px;}
-.sb-footer span{font-size:11px;color:rgba(255,255,255,.4);}
-.main{display:flex;flex-direction:column;min-height:0;}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--sh);gap:12px;flex-wrap:wrap;}
-.topbar-l{display:flex;align-items:center;gap:10px;flex-shrink:0;}
-.page-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
-.live-badge{display:flex;align-items:center;gap:5px;background:var(--gbg);border:1px solid var(--gborder);color:var(--green);padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
-.pulse{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.period-bar{display:flex;gap:3px;background:var(--bg);padding:3px;border-radius:9px;flex-wrap:wrap;}
-.pb{padding:5px 11px;border-radius:7px;border:none;background:transparent;cursor:pointer;font-size:11px;font-weight:600;color:var(--muted);transition:all .15s;font-family:'DM Sans',sans-serif;white-space:nowrap;}
-.pb.active{background:var(--surface);color:var(--text);box-shadow:var(--sh);}
-.pb.mes{font-size:10px;padding:4px 8px;}
-.content{padding:18px 24px;flex:1;}
-.page-section{display:none;}
-.page-section.active{display:block;}
-/* KPI */
-.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;}
-.kpi{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 15px;box-shadow:var(--sh);position:relative;overflow:hidden;}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kc,#e2e8f0);}
-.kpi-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px;font-weight:600;margin-bottom:4px;}
-.kpi-val{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;line-height:1;color:var(--kc,var(--text));margin-bottom:3px;}
-.kpi-prev{display:flex;align-items:center;gap:4px;margin-top:3px;}
-.kpi-prev-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
-.kpi-prev-lbl{font-size:10px;color:var(--muted2);}
-/* PRODUCT */
-.prod-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
-.prod-card{border-radius:12px;padding:14px 16px;border:1.5px solid;}
-.prod-card.clt{background:var(--gbg);border-color:var(--gborder);}
-.prod-card.fgts{background:var(--obg);border-color:var(--oborder);}
-.prod-hd{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
-.prod-dot{width:7px;height:7px;border-radius:50%;}
-.prod-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;}
-.prod-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-.pm-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;}
-.pm-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;}
-/* CHART FILTER */
-.chart-filter{display:flex;gap:5px;margin-bottom:10px;}
-.cf-btn{padding:5px 13px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
-.cf-btn.active{background:#0f1523;border-color:#0f1523;color:#fff;}
-/* CHARTS */
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh);min-width:0;overflow:hidden;}
-.cc-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:2px;}
-.cc-sub{font-size:11px;color:var(--muted);margin-bottom:12px;}
-.cw{position:relative;width:100%;overflow:hidden;max-width:100%;}
-.chart-main{margin-bottom:12px;}
-.chart-sub-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;min-width:0;}
-/* SECTION */
-.section{margin-bottom:18px;}
-.sec-hd{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.sec-hd span{font-size:11px;font-weight:400;color:var(--muted);font-family:'DM Sans',sans-serif;}
-/* TABS */
-.stabs{display:flex;gap:5px;margin-bottom:10px;}
-.stab{padding:5px 13px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
-.stab.active.clt{background:var(--green);border-color:var(--green);color:#fff;}
-.stab.active.fgts{background:var(--orange);border-color:var(--orange);color:#fff;}
-.stab.active.all{background:#0f1523;border-color:#0f1523;color:#fff;}
-.tpane{display:none;}
-.tpane.active{display:block;}
-/* TABLE */
-.tc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
-.tc table{width:100%;border-collapse:collapse;}
-.tc thead th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700;padding:8px 12px;text-align:left;background:var(--surface2);border-bottom:1px solid var(--border);}
-.tc thead th.num{text-align:right;}
-.tc tbody td{padding:7px 12px;font-size:12px;border-bottom:1px solid var(--border);}
-.tc tbody tr:last-child td{border-bottom:none;}
-.tc tbody tr.camp-row{cursor:pointer;user-select:none;}
-.tc tbody tr.camp-row td{background:#f7f8fc;font-weight:700;}
-.tc tbody tr.camp-row:hover td{background:#eef0f5;}
-.tc tbody tr.conj-row td{padding:5px 12px;font-size:11px;}
-.tc tbody tr.conj-row:hover td{background:var(--surface2);}
-.tc tbody tr.conj-row.hidden{display:none;}
-.conj-name{padding-left:28px!important;border-left:2px solid #e2e8f0;color:#374151;}
-.num{text-align:right;font-family:'DM Mono',monospace;font-size:11px;}
-.cg{color:var(--green);font-weight:700;} .cw2{color:var(--warn);font-weight:700;} .cr{color:var(--red);font-weight:700;}
-/* CAMP CARDS MOBILE */
-.camp-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;box-shadow:var(--sh);}
-.camp-card-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:8px;cursor:pointer;}
-.camp-card-name{font-size:12px;font-weight:700;flex:1;line-height:1.3;}
-.camp-card-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
-.camp-card-metric{text-align:center;}
-.camp-card-metric .lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;}
-.camp-card-metric .val{font-size:12px;font-weight:700;font-family:'DM Mono',monospace;}
-.camp-card-conjs{margin-top:8px;border-top:1px solid var(--border);padding-top:8px;display:none;}
-.camp-card-conjs.open{display:block;}
-.conj-card{background:var(--surface2);border-radius:6px;padding:8px;margin-bottom:4px;}
-.conj-card-name{font-size:10px;font-weight:600;color:var(--muted);margin-bottom:4px;}
-.conj-card-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;}
-/* SPARKLINE */
-.spk-wrap{width:72px;height:28px;display:inline-block;vertical-align:middle;}
-/* ADS GRID */
-.ads-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
-.ad-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--sh);transition:transform .15s,box-shadow .15s;}
-.ad-card:hover{transform:translateY(-2px);box-shadow:var(--sh2);}
-.ad-img-wrap{width:100%;height:150px;background:linear-gradient(135deg,#e5e7eb,#d1d5db);overflow:hidden;position:relative;}
-.ad-img-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
-.ad-img-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;color:#9ca3af;}
-.ad-info{padding:8px 10px;}
-.ad-name{font-size:11px;font-weight:600;margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.3;}
-.ad-stats{display:flex;justify-content:space-between;}
-.as-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
-.as-v{font-size:11px;font-weight:700;font-family:'DM Mono',monospace;}
-/* MES ACCORDION */
-.mes-accordion{margin-bottom:8px;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-.mes-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);cursor:pointer;user-select:none;font-weight:700;font-size:12px;}
-.mes-header:hover{background:#eef0f5;}
-.mes-header .mes-arrow{color:var(--muted);font-size:11px;transition:transform .2s;}
-.mes-header.open .mes-arrow{transform:rotate(90deg);}
-.mes-body{display:none;}
-.mes-body.open{display:block;}
-/* RANKINGS */
-.ranking-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
-.rank-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;box-shadow:var(--sh);}
-.rank-title{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:10px;}
-.rank-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);}
-.rank-item:last-child{border-bottom:none;}
-.rank-num{font-size:10px;color:var(--muted2);width:16px;font-weight:700;flex-shrink:0;}
-.rank-name{flex:1;font-size:11px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.rank-bar{width:50px;height:3px;background:var(--bg);border-radius:2px;overflow:hidden;flex-shrink:0;}
-.rank-bar-f{height:100%;border-radius:2px;}
-.rank-val{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;flex-shrink:0;}
-/* MOBILE */
-@media(max-width:768px){
-  .app{grid-template-columns:1fr;}
-  .sb{display:none;position:fixed;top:0;left:0;width:260px;height:100vh;z-index:200;overflow-y:auto;}
-  .sb.open{display:flex;}
-  .mob-menu{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;font-size:18px;flex-shrink:0;}
-  .topbar{flex-wrap:wrap;gap:8px;}
-  .period-bar{flex-wrap:wrap;}
-  .kpi-strip{grid-template-columns:repeat(2,1fr)!important;}
-  .prod-metrics{grid-template-columns:repeat(2,1fr)!important;}
-  .chart-sub-row{grid-template-columns:1fr!important;}
-  .ranking-row{grid-template-columns:1fr!important;}
-  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;}
-  .overlay.open{display:block;}
-}
-@media(min-width:769px){.mob-menu{display:none;}}
-::-webkit-scrollbar{width:4px;height:4px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
-@media(max-width:1100px){.kpi-strip{grid-template-columns:repeat(3,1fr);}.prod-metrics{grid-template-columns:repeat(2,1fr);}}
-</style>
-</head>
-<body>
-<div class="app">
-<aside class="sb">
-  <div class="sb-logo">
-    <div class="logo-box">C</div>
-    <div><div class="logo-name">CREDI</div><div class="logo-sub">Meta Ads</div></div>
-  </div>
-  <div class="sb-section">
-    <div class="sb-sec-label">Painéis</div>
-    <a href="#" class="sb-item active" onclick="showPage('dash',this);return false;"><span class="ico">📊</span>Dashboard Diário<span class="sb-dot" style="background:#00c49a"></span></a>
-    <a href="#" class="sb-item" onclick="showPage('geral',this);return false;"><span class="ico">📋</span>Dados Gerais da Conta</a>
-  </div>
-  <div class="period-info" style="margin-top:12px;">
-    <div class="pi-label">Período ativo</div>
-    <div class="pi-val" id="sbPeriod">Últimos 30 dias</div>
-    <div class="pi-dates" id="sbDates"></div>
-  </div>
-  <div class="sb-footer">
-    <div>Última atualização</div>
-    <span>04/04/2026 · via planilha</span>
-  </div>
-</aside>
-<main class="main">
-  <div class="topbar">
-    <div class="topbar-l">
-      <div class="page-title" id="pageTitle">Dashboard Diário</div>
-      <div class="live-badge"><div class="pulse"></div><span>Dados até 04/04</span></div>
-    </div>
-    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-      <div class="period-bar" id="pbDash">
-        <button class="pb" onclick="setPeriod(1,'Ontem',this)">Ontem</button>
-        <button class="pb" onclick="setPeriod(7,'7 dias',this)">7 dias</button>
-        <button class="pb" onclick="setPeriod(14,'14 dias',this)">14 dias</button>
-        <button class="pb active" onclick="setPeriod(30,'30 dias',this)">30 dias</button>
-        <select class="pb mes-select" onchange="setPeriodMes(this.value, this.options[this.selectedIndex].text, this)">
-        <option value="">Meses</option>
-        <option value="2026-04">Abr/26</option>
-        <option value="2026-03">Mar/26</option>
-        <option value="2026-02">Fev/26</option>
-        <option value="2026-01">Jan/26</option>
-      </select>
-        
-        
-      </div>
-      <div class="period-bar" id="pbGeral" style="display:none;">
-        <button class="pb active" onclick="setGeralQ('all',this)">Tudo</button>
-        <button class="pb" onclick="setGeralQ('q1-26',this)">T1 2026</button>
-        <button class="pb" onclick="setGeralQ('q4-25',this)">T4 2025</button>
-        <button class="pb" onclick="setGeralQ('q3-25',this)">T3 2025</button>
-        <button class="pb" onclick="setGeralQ('q2-25',this)">T2 2025</button>
-      </div>
-      <label id="themeToggle" title="Alternar tema" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);font-size:12px;font-weight:600;color:var(--muted);transition:all .15s;white-space:nowrap;" onclick="toggleTheme()">
-        <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
-      </label>
-    </div>
-  </div>
-  <div class="content">
+#!/usr/bin/env python3
+"""
+CREDI — Gerador automático do Dashboard Meta Ads
+Lê a planilha do Google Sheets (Stract) e gera o HTML atualizado.
+"""
 
-    <!-- DASHBOARD PAGE -->
-    <div class="page-section active" id="page-dash">
-      <div class="kpi-strip" id="kpiStrip"></div>
-      <div class="prod-row" id="prodRow"></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
-        <div class="chart-filter" style="margin-bottom:0;">
-          <button class="cf-btn active" onclick="setCF('geral',this)">Geral</button>
-          <button class="cf-btn" onclick="setCF('clt',this)">CLT</button>
-          <button class="cf-btn" onclick="setCF('fgts',this)">FGTS</button>
-        </div>
-        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--muted);font-weight:600;user-select:none;">
-          <input type="checkbox" id="chkLabels" onchange="toggleLabels(this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:#0f1523;">
-          Rótulos
-        </label>
-      </div>
-      <div class="chart-main">
-        <div class="chart-card">
-          <div class="cc-title">Leads · Investimento · CPL</div>
-          <div class="cc-sub">Leads (colunas) · Investimento (linha verde) · CPL (linha preta tracejada)</div>
-          <div class="cw" style="height:210px"><canvas id="chMain"></canvas></div>
-        </div>
-      </div>
-      <div class="chart-sub-row">
-        <div class="chart-card">
-          <div class="cc-title">CTR Diário (%)</div>
-          <div class="cc-sub">Meta: 2,5%</div>
-          <div class="cw" style="height:160px"><canvas id="chCTR"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="cc-title">CPM Diário (R$)</div>
-          <div class="cc-sub">Custo por 1.000 impressões</div>
-          <div class="cw" style="height:160px"><canvas id="chCPM"></canvas></div>
-        </div>
-      </div>
-      <!-- CAMPANHAS -->
-      <div class="section">
-        <div class="sec-hd">Campanhas <span id="campLbl">— últimos 30 dias</span></div>
-        <div class="stabs" id="campTabs">
-          <button class="stab all active" onclick="setCampF('all',this)">Todas</button>
-          <button class="stab clt" onclick="setCampF('CLT',this)">CLT</button>
-          <button class="stab fgts" onclick="setCampF('FGTS',this)">FGTS</button>
-        </div>
-        <div id="campContainer"></div>
-      </div>
-      <!-- CRIATIVOS -->
-      <div class="section">
-        <div class="sec-hd">Criativos <span id="adsLbl">— período selecionado</span></div>
-        <div class="stabs">
-          <button class="stab all active" onclick="switchS('ads','all',this)">Todas</button>
-          <button class="stab clt" onclick="switchS('ads','clt',this)">CLT</button>
-          <button class="stab fgts" onclick="switchS('ads','fgts',this)">FGTS</button>
-        </div>
-        <div class="tpane active" id="ads-all"><div class="ads-grid" id="agALL"></div></div>
-        <div class="tpane" id="ads-clt"><div class="ads-grid" id="agCLT"></div></div>
-        <div class="tpane" id="ads-fgts"><div class="ads-grid" id="agFGTS"></div></div>
-      </div>
+import pandas as pd
+import json
+import re
+import hashlib
+import requests
+from datetime import date, timedelta
+from pathlib import Path
 
-      <!-- BREAKDOWNS -->
-      <div class="section" id="breakdownSection">
-        <div class="sec-hd">Análise por Segmento <span id="breakdownLbl">— período selecionado</span></div>
-        <div style="display:inline-flex;align-items:center;gap:6px;background:#fefce8;border:1px solid #fde047;color:#854d0e;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:14px;">
-          <span>⚠️</span> Dados a nível de conta
-        </div>
-        <div style="display:grid;gap:16px;">
-          <!-- Idade -->
-          <div class="chart-card">
-            <div class="cc-title">📊 Por Faixa Etária</div>
-            <div id="bdAge"></div>
-          </div>
-          <!-- Gênero -->
-          <div class="chart-card">
-            <div class="cc-title">👤 Por Gênero</div>
-            <div id="bdGender"></div>
-          </div>
-<!-- Plataforma -->
-          <div class="chart-card">
-            <div class="cc-title">📱 Por Posicionamento</div>
-            <div id="bdPlatform"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+# ── CONFIG ────────────────────────────────────────────
+SHEET_ID = "1L3bUusX8nwynFcBxWW_9l-ouLVwOEy5IMuA8w5CI7xA"
+SHEET_TAB = "meta-ads"
+OUTPUT_FILE = "index.html"
+TEMPLATE_FILE = "template_base.html"
 
-    <!-- DADOS GERAIS PAGE -->
-    <div class="page-section" id="page-geral">
-      <div style="margin-bottom:16px;">
-        <div style="font-family:'Syne',sans-serif;font-size:17px;font-weight:700;margin-bottom:3px;">Dados Gerais da Conta</div>
-        <div style="font-size:12px;color:var(--muted);">Análise histórica Nov/2024 – Abr/2026 · dados reais da planilha</div>
-      </div>
-      <div class="kpi-strip" id="geralKpis"></div>
-      <div class="prod-row" id="geralProd"></div>
-      <div class="chart-card" style="margin-bottom:12px;">
-        <div class="cc-title">Investimento Mensal · CLT vs FGTS</div>
-        <div class="cc-sub" id="geralSub">Todos os meses</div>
-        <div class="cw" style="height:200px"><canvas id="chGeralMensal"></canvas></div>
-      </div>
-      <div class="chart-sub-row">
-        <div class="chart-card">
-          <div class="cc-title">CPL Mensal</div>
-          <div class="cc-sub">Geral · CLT · FGTS</div>
-          <div class="cw" style="height:170px"><canvas id="chGeralCPL"></canvas></div>
-        </div>
-        <div class="chart-card">
-          <div class="cc-title">Leads Mensais</div>
-          <div class="cc-sub">CLT (verde) · FGTS (laranja)</div>
-          <div class="cw" style="height:170px"><canvas id="chGeralLeads"></canvas></div>
-        </div>
-      </div>
-      <!-- Rankings -->
-      <div class="sec-hd" style="margin-top:4px;">Rankings <span id="rankLbl">— todos os meses</span></div>
-      <div class="ranking-row">
-        <div class="rank-card">
-          <div class="rank-title">🏆 Melhores Meses por CPL</div>
-          <div id="rankCPL"></div>
-        </div>
-        <div class="rank-card">
-          <div class="rank-title">📈 Maior Volume de Leads</div>
-          <div id="rankLeads"></div>
-        </div>
-      </div>
-      <!-- Campanhas geral -->
-      <div class="section">
-        <div class="sec-hd">Ranking de Campanhas <span id="geralCampLbl">— todos os meses</span></div>
-        <div class="stabs">
-          <button class="stab all active" onclick="setGeralCampF('all',this)">Todas</button>
-          <button class="stab clt" onclick="setGeralCampF('CLT',this)">CLT</button>
-          <button class="stab fgts" onclick="setGeralCampF('FGTS',this)">FGTS</button>
-        </div>
-        <div class="tc" id="tGeralCamp"></div>
-      </div>
-      <!-- Públicos geral -->
-      <div class="section">
-        <div class="sec-hd">Ranking de Públicos / Conjuntos <span id="geralPubLbl">— todos os meses</span></div>
-        <div class="tc" id="tGeralPub"></div>
-      </div>
-    </div>
-
-  </div>
-</main>
-</div>
-<script>
-// ═══ DADOS REAIS ══════════════════════════════════════
-const KPIS_PERIODO={};
-const BREAKDOWN_DATA={};
-const ADS_DATA={"CLT":[],"FGTS":[]};
-const DAILY={
-  days:["20/01","21/01","22/01","23/01","24/01","26/01","27/01","28/01","29/01","30/01","02/02","03/02","04/02","05/02","06/02","09/02","10/02","11/02","12/02","13/02","16/02","19/02","20/02","23/02","24/02","25/02","26/02","27/02","02/03","03/03","04/03","05/03","06/03","09/03","10/03","11/03","12/03","13/03","14/03","15/03","16/03","17/03","18/03","19/03","20/03","21/03","22/03","23/03","24/03","25/03","26/03","27/03","28/03","29/03","30/03","31/03","01/04","02/04","03/04","04/04"],
-  spend:[1012.13,598.11,365.13,2247.27,309.09,924.89,1938.46,2093.45,2027.11,1675.04,1426.65,1381.25,1210.78,1169.24,1032.11,1088.24,1269.11,1185.75,1348.07,620.76,25.15,1596.79,1057.99,1276.15,1073.49,1587.57,1225.76,991.21,1433.17,411.37,425.76,624.87,583.82,922.24,1464.92,1255.14,1900.31,1546.37,16.02,18.12,1468.7,1259.19,1253.05,1505.79,1037.53,18.51,16.68,1361.95,796.51,768.64,790.02,796.71,739.42,17.47,762.18,816.42,818.71,811.77,161.61,22.11],
-  leads:[825,514,252,652,287,318,1181,1209,1052,919,889,889,782,742,571,693,920,883,895,405,30,772,782,792,780,896,784,531,199,151,152,236,213,364,510,490,757,606,0,0,382,405,423,688,548,0,0,439,414,431,457,467,417,0,391,418,423,404,103,1],
-  cpl:[1.23,1.16,1.45,3.45,1.08,2.91,1.64,1.73,1.93,1.82,1.6,1.55,1.55,1.58,1.81,1.57,1.38,1.34,1.51,1.53,0.84,2.07,1.35,1.61,1.38,1.77,1.56,1.87,7.2,2.72,2.8,2.65,2.74,2.53,2.87,2.56,2.51,2.55,null,null,3.84,3.11,2.96,2.19,1.89,null,null,3.1,1.92,1.78,1.73,1.71,1.77,null,1.95,1.95,1.94,2.01,1.57,22.11],
-  ctr:[5.31,2.42,2.47,1.01,2.97,1.02,2.41,2.01,2.35,2.38,2.79,2.07,2.82,2.9,3.01,2.97,3.27,3.22,2.82,2.91,8.66,1.43,2.45,2.56,2.74,1.51,2.57,2.49,0.87,3.45,3.13,3.66,4.31,3.78,3.75,3.82,2.82,2.32,3.15,3.55,1.89,3.65,3.88,2.56,3.37,3.31,4.65,2.06,3.5,3.4,3.79,3.1,2.63,2.85,2.59,3.25,2.91,2.59,3.84,3.75],
-  cpm:[52.03,21.53,25.58,12.76,25.81,11.02,28.46,23.88,31.91,31.28,31.22,21.19,32.87,34.24,39.73,35.6,36.41,34.22,31.51,33.56,70.25,15.31,23.95,29.17,27.52,16.73,29.44,34.39,10.4,65.49,61.51,68.55,81.1,71.23,75.76,69.03,48.4,39.09,9.18,8.8,34.6,70.18,73.71,37.21,40.0,10.04,9.7,34.97,43.74,39.64,41.76,34.03,30.01,9.4,32.13,39.32,32.96,32.25,27.96,10.11],
-  cltL:[721,0,0,94,0,0,678,678,687,643,671,676,605,578,469,538,682,683,742,321,30,535,367,458,236,426,480,344,151,151,152,236,213,364,510,490,757,606,0,0,382,405,423,688,548,0,0,383,275,292,283,301,248,0,251,312,287,286,89,1],
-  fgtsL:[104,514,252,558,287,318,503,531,365,276,218,213,177,164,102,155,238,200,153,84,0,237,415,334,544,470,304,187,48,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,56,139,139,174,166,169,0,140,106,136,118,14,0],
-  cltS:[912.32,0,0,1389.5,0,0,1016.63,1025.87,1151.27,1021.17,1053.53,939.38,906.36,885.72,780.16,846.86,965.21,894.48,1024.64,487.56,25.15,1172.83,506.09,591.53,355.74,1012.16,779.18,637.11,1164.11,411.37,425.76,624.87,583.82,922.24,1464.92,1255.14,1900.31,1546.37,16.02,18.12,1468.7,1259.19,1253.05,1505.79,1037.53,18.51,16.68,970.35,562.92,528.06,530.11,521.36,470.42,17.47,509.18,549.62,551.51,536.68,148.48,22.11],
-  fgtsS:[99.81,598.11,365.13,857.77,309.09,924.89,921.83,1067.58,875.84,653.87,373.12,441.87,304.42,283.52,251.95,241.38,303.9,291.27,323.43,133.2,0,423.96,551.9,684.62,717.75,575.41,446.58,354.1,269.06,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,391.6,233.59,240.58,259.91,275.35,269.0,0,253.0,266.8,267.2,275.09,13.13,0],
-  cltCPL:[1.27,null,null,14.78,null,null,1.5,1.51,1.68,1.59,1.57,1.39,1.5,1.53,1.66,1.57,1.42,1.31,1.38,1.52,0.84,2.19,1.38,1.29,1.51,2.38,1.62,1.85,7.71,2.72,2.8,2.65,2.74,2.53,2.87,2.56,2.51,2.55,null,null,3.84,3.11,2.96,2.19,1.89,null,null,2.53,2.05,1.81,1.87,1.73,1.9,null,2.03,1.76,1.92,1.88,1.67,22.11],
-  fgtsCPL:[0.96,1.16,1.45,1.54,1.08,2.91,1.83,2.01,2.4,2.37,1.71,2.07,1.72,1.73,2.47,1.56,1.28,1.46,2.11,1.59,null,1.79,1.33,2.05,1.32,1.22,1.47,1.89,5.61,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,6.99,1.68,1.73,1.49,1.66,1.59,null,1.81,2.52,1.96,2.33,0.94,null],
-  cltCTR:[5.31,null,null,5.01,null,null,3.5,2.89,3.37,3.47,3.72,2.95,4.05,4.06,3.94,3.92,4.44,4.42,4.13,4.0,8.66,3.87,3.47,3.67,4.26,2.78,3.62,3.38,1.31,3.45,3.13,3.66,4.31,3.78,3.75,3.82,2.82,2.32,3.15,3.55,1.89,3.65,3.88,2.56,3.37,3.31,4.65,2.22,3.87,3.63,4.13,3.38,2.99,null,2.88,3.51,3.31,3.04,3.94,3.75],
-  fgtsCTR:[3.01,2.42,2.47,0.84,2.97,1.02,1.74,1.46,1.6,1.58,1.52,1.12,1.39,1.45,1.56,1.63,1.73,1.74,1.28,1.49,null,1.06,1.49,1.64,1.7,1.22,1.42,1.59,0.47,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1.71,2.75,2.95,2.98,2.71,2.41,null,2.16,2.24,2.27,2.11,1.08,null],
-};
-
-const MES_DAYS={
-  '2026-04':["01/04","02/04","03/04","04/04"],
-  '2026-03':["02/03","03/03","04/03","05/03","06/03","09/03","10/03","11/03","12/03","13/03","14/03","15/03","16/03","17/03","18/03","19/03","20/03","21/03","22/03","23/03","24/03","25/03","26/03","27/03","28/03","29/03","30/03","31/03"],
-  '2026-02':["02/02","03/02","04/02","05/02","06/02","09/02","10/02","11/02","12/02","13/02","16/02","19/02","20/02","23/02","24/02","25/02","26/02","27/02"],
-  '2026-01':["20/01","21/01","22/01","23/01","24/01","26/01","27/01","28/01","29/01","30/01"],
-  '2025-12':[],
-  '2025-11':[],
-};
-
-// Camps with real adsets + sparklines (all months have adsets for all camps)
-const CAMPS_MES={"2026-04":[{"n":"19/12 - atv @  |CLT-TOP|ENG |WT : 35 a 44","product":"CLT","spend":220.76,"leads":223,"cpl":0.99,"cpm":25.06,"ctr":3.44,"spk":[null,0.62,1.27,0.78,1.57,0.99],"conjs":[{"n":"L","spend":119.55,"leads":124,"cpl":0.96,"cpm":23.35,"ctr":3.3},{"n":"B","spend":101.21,"leads":99,"cpl":1.02,"cpm":27.41,"ctr":3.63}]},{"n":"10/08 -  @ATV  |CLT|ENG |WT —2","product":"CLT","spend":374.34,"leads":193,"cpl":1.94,"cpm":55.51,"ctr":4.26,"spk":[null,null,null,null,1.91,1.94],"conjs":[{"n":"A","spend":374.34,"leads":193,"cpl":1.94,"cpm":55.51,"ctr":4.26}]},{"n":"20/06 -  atv @|CLT|ENG |WT (SIMP)","product":"CLT","spend":292.7,"leads":151,"cpl":1.94,"cpm":49.85,"ctr":3.83,"spk":[null,null,null,null,2.19,1.94],"conjs":[{"n":"CLT|FGTS","spend":292.7,"leads":151,"cpl":1.94,"cpm":49.85,"ctr":3.83}]},{"n":"23/03 - # |FGTS |ENG |WT — 2","product":"FGTS","spend":277.98,"leads":146,"cpl":1.9,"cpm":21.35,"ctr":1.95,"spk":[null,null,null,null,1.79,1.9],"conjs":[{"n":"A","spend":277.98,"leads":146,"cpl":1.9,"cpm":21.35,"ctr":1.95}]},{"n":"23/03 - # |FGTS |ENG |WT","product":"FGTS","spend":277.44,"leads":122,"cpl":2.27,"cpm":20.41,"ctr":1.64,"spk":[null,null,null,null,1.7,2.27],"conjs":[{"n":"A","spend":277.44,"leads":122,"cpl":2.27,"cpm":20.41,"ctr":1.64}]},{"n":"20/06 -  atv @|CLT|ENG |WT (SIMP) —2","product":"CLT","spend":304.8,"leads":95,"cpl":3.21,"cpm":93.44,"ctr":3.65,"spk":[null,null,null,null,2.7,3.21],"conjs":[{"n":"A","spend":304.8,"leads":95,"cpl":3.21,"cpm":93.44,"ctr":3.65}]}],"2026-03":[{"n":"10/08 -  @ATV  |CLT|ENG |WT —2","product":"CLT","spend":4269.44,"leads":2240,"cpl":1.91,"cpm":45.31,"ctr":3.18,"spk":[null,null,null,null,null,1.91],"conjs":[{"n":"A","spend":4269.44,"leads":2240,"cpl":1.91,"cpm":45.31,"ctr":3.18}]},{"n":"10/08 -  |CLT:TURB|ENG |WT","product":"CLT","spend":5487.83,"leads":1699,"cpl":3.23,"cpm":45.49,"ctr":2.18,"spk":[null,null,null,null,null,3.23],"conjs":[{"n":"D","spend":1268.16,"leads":515,"cpl":2.46,"cpm":49.58,"ctr":2.85},{"n":"B","spend":1644.48,"leads":450,"cpl":3.65,"cpm":37.92,"ctr":1.81},{"n":"A","spend":1365.99,"leads":387,"cpl":3.53,"cpm":48.4,"ctr":2.11},{"n":"C","spend":1209.2,"leads":347,"cpl":3.48,"cpm":51.52,"ctr":2.19}]},{"n":"19/12 - atv @  |CLT-TOP|ENG |WT : 35 a 44","product":"CLT","spend":2237.32,"leads":1426,"cpl":1.57,"cpm":40.31,"ctr":3.49,"spk":[null,null,0.62,1.27,0.78,1.57],"conjs":[{"n":"B","spend":1136.83,"leads":737,"cpl":1.54,"cpm":42.04,"ctr":3.62},{"n":"L","spend":1100.49,"leads":689,"cpl":1.6,"cpm":38.66,"ctr":3.36}]},{"n":"03/03    |CLT-EMPRESAS|ENG |WT — 2","product":"CLT","spend":3515.03,"leads":1195,"cpl":2.94,"cpm":76.76,"ctr":3.61,"spk":[null,null,null,null,null,2.94],"conjs":[{"n":"A","spend":3515.03,"leads":1195,"cpl":2.94,"cpm":76.76,"ctr":3.61}]},{"n":"05/03   |CLT-EMPRESAS|ENG |WT —3","product":"CLT","spend":1869.14,"leads":641,"cpl":2.92,"cpm":72.21,"ctr":3.53,"spk":[null,null,null,null,null,2.92],"conjs":[{"n":"A","spend":1869.14,"leads":641,"cpl":2.92,"cpm":72.21,"ctr":3.53}]},{"n":"23/03 - # |FGTS |ENG |WT","product":"FGTS","spend":899.21,"leads":530,"cpl":1.7,"cpm":34.29,"ctr":2.85,"spk":[null,null,null,null,null,1.7],"conjs":[{"n":"A","spend":899.21,"leads":530,"cpl":1.7,"cpm":34.29,"ctr":2.85}]},{"n":"23/03 - # |FGTS |ENG |WT — 2","product":"FGTS","spend":899.02,"leads":503,"cpl":1.79,"cpm":33.17,"ctr":2.69,"spk":[null,null,null,null,null,1.79],"conjs":[{"n":"A","spend":899.02,"leads":503,"cpl":1.79,"cpm":33.17,"ctr":2.69}]},{"n":"20/06 -  atv @|CLT|ENG |WT (SIMP)","product":"CLT","spend":1093.25,"leads":500,"cpl":2.19,"cpm":51.69,"ctr":3.46,"spk":[null,null,null,null,null,2.19],"conjs":[{"n":"CLT|FGTS","spend":1093.25,"leads":500,"cpl":2.19,"cpm":51.69,"ctr":3.46}]},{"n":"20/06 -  atv @|CLT|ENG |WT (SIMP) —2","product":"CLT","spend":1123.0,"leads":416,"cpl":2.7,"cpm":75.39,"ctr":3.45,"spk":[null,null,null,null,null,2.7],"conjs":[{"n":"A","spend":1123.0,"leads":416,"cpl":2.7,"cpm":75.39,"ctr":3.45}]},{"n":"19/12 -   |CLT-TOP|ENG |WT : 25 A 34","product":"CLT","spend":731.2,"leads":232,"cpl":3.15,"cpm":53.21,"ctr":2.66,"spk":[null,null,0.56,1.35,1.39,3.15],"conjs":[{"n":"B","spend":357.4,"leads":131,"cpl":2.73,"cpm":42.7,"ctr":2.44},{"n":"L","spend":373.8,"leads":101,"cpl":3.7,"cpm":69.57,"ctr":3.02}]}],"2026-02":[{"n":"21/11   |CLT|ENG |WT —2","product":"CLT","spend":6046.29,"leads":3737,"cpl":1.62,"cpm":80.41,"ctr":6.24,"spk":[null,null,1.0,1.04,1.27,1.62],"conjs":[{"n":"A","spend":6046.29,"leads":3737,"cpl":1.62,"cpm":80.41,"ctr":6.24}]},{"n":"22/12 -|FGTS |ENG |WT","product":"FGTS","spend":4666.38,"leads":2972,"cpl":1.57,"cpm":17.04,"ctr":1.62,"spk":[null,null,null,0.41,1.6,1.57],"conjs":[{"n":"A","spend":4666.38,"leads":2972,"cpl":1.57,"cpm":17.04,"ctr":1.62}]},{"n":"18/11   atv|CLT|ENG |WT","product":"CLT","spend":4564.36,"leads":2052,"cpl":2.22,"cpm":25.02,"ctr":1.86,"spk":[null,null,1.09,1.14,1.25,2.22],"conjs":[{"n":"A","spend":4564.36,"leads":2052,"cpl":2.22,"cpm":25.02,"ctr":1.86}]},{"n":"19/12 - atv @  |CLT-TOP|ENG |WT : 35 a 44","product":"CLT","spend":1444.25,"leads":1854,"cpl":0.78,"cpm":23.89,"ctr":3.82,"spk":[null,null,null,0.62,1.27,0.78],"conjs":[{"n":"B","spend":753.04,"leads":932,"cpl":0.81,"cpm":22.84,"ctr":3.57},{"n":"L","spend":691.21,"leads":922,"cpl":0.75,"cpm":25.14,"ctr":4.11}]},{"n":"22/12 - |FGTS |ENG |WT — 3","product":"FGTS","spend":1797.82,"leads":1114,"cpl":1.61,"cpm":18.01,"ctr":1.66,"spk":[null,null,null,null,1.91,1.61],"conjs":[{"n":"A","spend":1797.82,"leads":1114,"cpl":1.61,"cpm":18.01,"ctr":1.66}]},{"n":"19/12 -   |CLT-TOP|ENG |WT : 25 A 34","product":"CLT","spend":1491.27,"leads":1072,"cpl":1.39,"cpm":41.04,"ctr":3.93,"spk":[null,null,null,0.56,1.35,1.39],"conjs":[{"n":"B","spend":858.25,"leads":725,"cpl":1.18,"cpm":32.34,"ctr":3.58},{"n":"L","spend":633.02,"leads":347,"cpl":1.82,"cpm":64.57,"ctr":4.87}]}],"2026-01":[{"n":"18/11   atv|CLT|ENG |WT","product":"CLT","spend":7116.7,"leads":5671,"cpl":1.25,"cpm":38.12,"ctr":3.97,"spk":[null,null,null,1.09,1.14,1.25],"conjs":[{"n":"A","spend":7116.7,"leads":5671,"cpl":1.25,"cpm":38.12,"ctr":3.97}]},{"n":"21/11   |CLT|ENG |WT —2","product":"CLT","spend":7177.36,"leads":5641,"cpl":1.27,"cpm":36.44,"ctr":3.83,"spk":[null,null,null,1.0,1.04,1.27],"conjs":[{"n":"A","spend":7177.36,"leads":5641,"cpl":1.27,"cpm":36.44,"ctr":3.83}]},{"n":"22/12 -|FGTS |ENG |WT","product":"FGTS","spend":2997.89,"leads":1873,"cpl":1.6,"cpm":19.7,"ctr":1.8,"spk":[null,null,null,null,0.41,1.6],"conjs":[{"n":"A","spend":2997.89,"leads":1873,"cpl":1.6,"cpm":19.7,"ctr":1.8}]},{"n":"19/12 -   |CLT-TOP|ENG |WT : 25 A 34","product":"CLT","spend":1533.74,"leads":1134,"cpl":1.35,"cpm":41.81,"ctr":4.39,"spk":[null,null,null,null,0.56,1.35],"conjs":[{"n":"B","spend":737.98,"leads":577,"cpl":1.28,"cpm":45.69,"ctr":5.05},{"n":"L","spend":795.76,"leads":557,"cpl":1.43,"cpm":38.76,"ctr":3.87}]},{"n":"19/12 - atv @  |CLT-TOP|ENG |WT : 35 a 44","product":"CLT","spend":1414.05,"leads":1115,"cpl":1.27,"cpm":37.35,"ctr":4.1,"spk":[null,null,null,null,0.62,1.27],"conjs":[{"n":"B","spend":752.77,"leads":591,"cpl":1.27,"cpm":34.75,"ctr":3.97},{"n":"L","spend":661.28,"leads":524,"cpl":1.26,"cpm":40.83,"ctr":4.27}]},{"n":"22/12 -  |FGTS |ENG |WT —3","product":"FGTS","spend":1481.73,"leads":882,"cpl":1.68,"cpm":13.12,"ctr":1.38,"spk":[null,null,null,null,null,1.68],"conjs":[{"n":"A","spend":1481.73,"leads":882,"cpl":1.68,"cpm":13.12,"ctr":1.38}]},{"n":"22/12 - |FGTS |ENG |WT — 3","product":"FGTS","spend":1679.36,"leads":880,"cpl":1.91,"cpm":17.03,"ctr":1.35,"spk":[null,null,null,null,null,1.91],"conjs":[{"n":"A","spend":1679.36,"leads":880,"cpl":1.91,"cpm":17.03,"ctr":1.35}]},{"n":"22/12 -  |FGTS |ENG |WT — 2","product":"FGTS","spend":1606.32,"leads":873,"cpl":1.84,"cpm":27.07,"ctr":2.05,"spk":[null,null,null,null,null,1.84],"conjs":[{"n":"A","spend":1606.32,"leads":873,"cpl":1.84,"cpm":27.07,"ctr":2.05}]}],"2025-12":[{"n":"21/11   |CLT|ENG |WT —2","product":"CLT","spend":6158.81,"leads":5898,"cpl":1.04,"cpm":48.15,"ctr":5.56,"spk":[null,null,null,null,1.0,1.04],"conjs":[{"n":"A","spend":6158.81,"leads":5898,"cpl":1.04,"cpm":48.15,"ctr":5.56}]},{"n":"18/11   atv|CLT|ENG |WT","product":"CLT","spend":5600.68,"leads":4914,"cpl":1.14,"cpm":48.07,"ctr":5.09,"spk":[null,null,null,null,1.09,1.14],"conjs":[{"n":"A","spend":5600.68,"leads":4914,"cpl":1.14,"cpm":48.07,"ctr":5.09}]},{"n":"27/11 @ atv|CLT|ENG |WT —3","product":"CLT","spend":2059.95,"leads":1182,"cpl":1.74,"cpm":68.78,"ctr":4.9,"spk":[null,null,null,null,1.57,1.74],"conjs":[{"n":"A","spend":2059.95,"leads":1182,"cpl":1.74,"cpm":68.78,"ctr":4.9}]},{"n":"22/12 -|FGTS |ENG |WT","product":"FGTS","spend":344.41,"leads":839,"cpl":0.41,"cpm":14.13,"ctr":4.1,"spk":[null,null,null,null,null,0.41],"conjs":[{"n":"A","spend":344.41,"leads":839,"cpl":0.41,"cpm":14.13,"ctr":4.1}]},{"n":"10/12 -  | LUZ |ENG |WT  |EST","product":"CLT","spend":781.15,"leads":516,"cpl":1.51,"cpm":19.16,"ctr":2.11,"spk":[null,null,null,null,null,1.51],"conjs":[{"n":"B","spend":706.01,"leads":453,"cpl":1.56,"cpm":18.88,"ctr":2.06},{"n":"PB","spend":75.14,"leads":63,"cpl":1.19,"cpm":22.35,"ctr":2.74}]},{"n":"19/12 -   |CLT-TOP|ENG |WT : 25 A 34","product":"CLT","spend":266.94,"leads":473,"cpl":0.56,"cpm":27.8,"ctr":6.31,"spk":[null,null,null,null,null,0.56],"conjs":[{"n":"L","spend":124.58,"leads":238,"cpl":0.52,"cpm":29.92,"ctr":7.16},{"n":"B","spend":142.36,"leads":235,"cpl":0.61,"cpm":26.18,"ctr":5.66}]},{"n":"19/12 - atv @  |CLT-TOP|ENG |WT : 35 a 44","product":"CLT","spend":276.15,"leads":445,"cpl":0.62,"cpm":27.69,"ctr":6.06,"spk":[null,null,null,null,null,0.62],"conjs":[{"n":"B","spend":152.65,"leads":236,"cpl":0.65,"cpm":24.77,"ctr":5.22},{"n":"L","spend":123.5,"leads":209,"cpl":0.59,"cpm":32.41,"ctr":7.4}]}],"2025-11":[{"n":"08/07 - atv|CLT","product":"CLT","spend":3606.95,"leads":2579,"cpl":1.4,"cpm":31.98,"ctr":3.44,"spk":[null,0.5,0.6,0.64,0.93,1.4],"conjs":[{"n":"A","spend":1819.7,"leads":1331,"cpl":1.37,"cpm":35.96,"ctr":3.75},{"n":"B","spend":1787.25,"leads":1248,"cpl":1.43,"cpm":28.74,"ctr":3.19}]},{"n":"18/07 -  atv|CLT 1","product":"CLT","spend":2335.64,"leads":1654,"cpl":1.41,"cpm":39.67,"ctr":3.61,"spk":[null,null,null,null,null,1.41],"conjs":[{"n":"B","spend":1222.24,"leads":879,"cpl":1.39,"cpm":37.64,"ctr":3.4},{"n":"A-1","spend":1073.83,"leads":772,"cpl":1.39,"cpm":42.08,"ctr":3.95},{"n":"C","spend":39.57,"leads":3,"cpl":13.19,"cpm":44.71,"ctr":1.24}]},{"n":"09/07 - |CLT:  2 — 200","product":"CLT","spend":2163.93,"leads":1467,"cpl":1.48,"cpm":48.28,"ctr":4.68,"spk":[null,null,null,null,1.14,1.48],"conjs":[{"n":"B","spend":961.82,"leads":802,"cpl":1.2,"cpm":45.13,"ctr":5.22},{"n":"A","spend":1202.11,"leads":665,"cpl":1.81,"cpm":51.12,"ctr":4.19}]},{"n":"18/11   atv|CLT|ENG |WT","product":"CLT","spend":1273.97,"leads":1174,"cpl":1.09,"cpm":58.74,"ctr":6.17,"spk":[null,null,null,null,null,1.09],"conjs":[{"n":"A","spend":1273.97,"leads":1174,"cpl":1.09,"cpm":58.74,"ctr":6.17}]},{"n":"21/11   |CLT|ENG |WT —2","product":"CLT","spend":1146.95,"leads":1150,"cpl":1.0,"cpm":50.85,"ctr":6.1,"spk":[null,null,null,null,null,1.0],"conjs":[{"n":"A","spend":1146.95,"leads":1150,"cpl":1.0,"cpm":50.85,"ctr":6.1}]},{"n":"17/07   atv|CLT 1 — 200","product":"CLT","spend":815.51,"leads":417,"cpl":1.96,"cpm":39.13,"ctr":2.7,"spk":[null,null,null,null,null,1.96],"conjs":[{"n":"A-1","spend":583.6,"leads":308,"cpl":1.89,"cpm":39.62,"ctr":2.77},{"n":"B","spend":231.91,"leads":109,"cpl":2.13,"cpm":37.94,"ctr":2.54}]}]};
-
-// Monthly data
-const MONTHLY={
-  meses:["2024-11","2024-12","2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04"],
-  lbl:["Nov/24","Dez/24","Jan/25","Fev/25","Mar/25","Abr/25","Mai/25","Jun/25","Jul/25","Ago/25","Set/25","Out/25","Nov/25","Dez/25","Jan/26","Fev/26","Mar/26","Abr/26"],
-  cltS:[0,0,0,0,0,40.5,1653.5,3889.03,3660.89,4053.15,9979.4,13747.43,11675.27,16126.87,17507.05,13863.69,21551.99,1258.78],
-  fgtsS:[8766.49,10297.38,9385.95,8815.36,9458.3,12488.82,10686.62,6704.63,8593.04,8400.72,10099.97,10172.84,10.02,344.41,7765.3,6702.38,2458.89,555.42],
-  cplG:[4.74,3.72,2.39,3.0,2.81,4.55,1.84,1.29,1.42,1.48,1.12,1.43,1.35,1.11,1.37,1.58,2.51,1.95],
-  cltCPL:[null,null,null,null,null,1.31,0.39,0.58,0.55,0.6,0.65,0.96,1.35,1.15,1.26,1.57,2.56,1.9],
-  fgtsCPL:[4.74,3.72,2.39,3.0,2.81,4.59,4.4,4.68,4.28,5.06,4.05,4.33,5.01,0.41,1.72,1.6,2.16,2.07],
-  cltL:[0,0,0,0,0,31,4269,6749,6643,6782,15434,14390,8653,14021,13873,8841,8421,663],
-  fgtsL:[1851,2770,3920,2939,3361,2721,2431,1434,2010,1659,2494,2348,2,839,4508,4195,1137,268],
-};
-
-// Adsets aggregated across all months for Dados Gerais
-const ADSETS_ALL=[
-  {n:"A (Advantage+)",spend:47000,leads:28000,cpl:1.68},{n:"B (CLT:Aliment.)",spend:12000,leads:7200,cpl:1.67},
-  {n:"L (Cidades BR)",spend:8900,leads:5800,cpl:1.53},{n:"B (CLT:Turb)",spend:6400,leads:2800,cpl:2.29},
-  {n:"D (CLT:Aviação)",spend:4800,leads:2100,cpl:2.29},{n:"C (EMP.Gerais)",spend:7200,leads:1900,cpl:3.79},
-  {n:"A (FGTS Adv+)",spend:31000,leads:14200,cpl:2.18},{n:"CLT|FGTS Broad",spend:3900,leads:2100,cpl:1.86},
-];
-
-// Criativos com URLs reais
-const ADS={
-  CLT:[
-    {n:"A1 · 10/08 CLT ENG WT",leads:2074,cpl:2.93,ctr:2.19,thumb:"https://scontent.xx.fbcdn.net/v/t45.1600-4/584992353_25077556225229473_8921351050732976332_n.jpg?_nc_cat=101&ccb=1-7&_nc_eui2=AeEfAqFMf7cqOeVEMnnzfqPnso1y6ngUgYmyjXLqeBSBiVF5ArxWQ0FL4xCwN1fV6cD7pTN6f_DSmYXqR3PECCRA&_nc_ohc=KBw9oBDMOsEQ7kNvwF4xHMH&_nc_oc=Adop2UjHzb0zL3qOFemxqOI2gw38H1aX3CeHwXo9sbOKgpVrvlwlS2cq2dSxPi2hxZE&_nc_zt=1&_nc_ht=scontent.xx&edm=AOgd6ZUEAAAA&_nc_gid=ehk0wbwz5Iw6WO-_2hup8w&_nc_tpa=Q5bMBQGOvR6_EJAwArIgcyFae3iibfvWTz7465P2VcQ_e9KjTKI2f8WzlD_Mbgrb-oFNzlHWKlavgNFo&stp=c0.5000x0.5000f_dst-emg0_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Af1Jds08AXPE1XzZqVux5zjJIgdnJVwOrqzxNFOuih3mxw&oe=69D7896F"},
-    {n:"A2 — 3 · @ATV CLT",leads:1353,cpl:1.6,ctr:2.38,thumb:"https://scontent.xx.fbcdn.net/v/t15.5256-10/649093593_913157794793950_1065031677083009856_n.jpg?_nc_cat=103&ccb=1-7&_nc_eui2=AeGc0bqKmfPtEoXmQTTrWYDdNacM8xo3sJ41pwzzGjewnslJk65SbDEPLuzDiPlhs3cfFwoyg1tqju2pLhTlp3_E&_nc_ohc=1mH19RYwVVMQ7kNvwGSZI4N&_nc_oc=AdoD-oKW3Rk585LvM82e7soAmRm4a-RscAoUxi5oozrgBOVZnhf___Gp2f7VaMALk8k&_nc_zt=23&_nc_ht=scontent.xx&edm=AOgd6ZUEAAAA&_nc_gid=ehk0wbwz5Iw6WO-_2hup8w&_nc_tpa=Q5bMBQFVLXX1OP_MMu3dVIble5VkUIlL2Y6Tqakl1GahNb3Nw4DS1D-k0pfgJXOyt4vHG31PVUa6VEmj&stp=c0.5000x0.5000f_dst-emg0_q75_tt6&ur=b696e2&_nc_sid=58080a&oh=00_Af3uMw7u49r1-VrQhjCQEHEVMbZrM68WqIc1R1bZ3kAwqg&oe=69D79896"},
-    {n:"A2 · CLT TURB",leads:1105,cpl:3.31,ctr:2.25,thumb:"https://scontent.xx.fbcdn.net/v/t45.1600-4/583184926_25077553328563096_7279765623252139550_n.jpg?_nc_cat=103&ccb=1-7&_nc_eui2=AeEPBslOJwgto5qqmk5S6GPbCiyqiTpixw4KLKqJOmLHDmr_Qt4ZTNDMPR836KfnKpvCSl1JgCBdq2HzClC3oq5J&_nc_ohc=K4OcQuFRWVMQ7kNvwGecJkl&_nc_oc=Adoi5E9L2HEOiE6mPRhM9iAiTXTMXj5Ul34W4mbI3DoAl9iAy4QViIvn1zO4zz8myc0&_nc_zt=1&_nc_ht=scontent.xx&edm=AOgd6ZUEAAAA&_nc_gid=ehk0wbwz5Iw6WO-_2hup8w&_nc_tpa=Q5bMBQGlGYaAPMAovPRFi5XpoMkG3cJ7MbbI-6fQhFqXKVLJVJt3ZrLtIdFQsPztsLXe19qivysJcLmO&stp=c0.5000x0.5000f_dst-emg0_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Af0xuQWFtNbo-8rR0dHEpISUn8M0PYacqf9IG5S7kF1nrw&oe=69D78F71"},
-    {n:"L3 · CLT-TOP 35-44",leads:568,cpl:1.26,ctr:3.12,thumb:"https://scontent.xx.fbcdn.net/v/t45.1600-4/598901620_25336024812715945_7847533289635566054_n.png?_nc_cat=105&ccb=1-7&_nc_eui2=AeGW9sxjKnDnNt588hCegaNcAkMHyqYpmGICQwfKpimYYj9IZIuPZgsvL08PFaUrHk7lSpmvRmS3wde9NS1H7kHH&_nc_ohc=Q9StqKQdmlgQ7kNvwFD8KJR&_nc_oc=Adrx2auynKX75KOvxLU7mwg44NZacCizq4nGvzMSUV968gkEmsY7qA2g1hSa66E4eKw&_nc_zt=1&_nc_ht=scontent.xx&edm=AOgd6ZUEAAAA&_nc_gid=ehk0wbwz5Iw6WO-_2hup8w&_nc_tpa=Q5bMBQHS8qQJWeJj42FyLwuxXlV86C2-WF_LT4IA6BdYy6F0JEFZfr_LTU104do7zvY-J9d15C3pfFtp&stp=c0.5000x0.5000f_dst-emg0_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Af3bZ933VgAtczAaD354R6DIK54N4ACt3IeVjlTHDjHX5g&oe=69D7B261"},
-    {n:"B4 · CLT-TOP 35-44",leads:545,cpl:1.05,ctr:3.58,thumb:"https://scontent.xx.fbcdn.net/v/t15.5256-10/617384197_1143361167688923_2271476617082121987_n.jpg?_nc_cat=107&ccb=1-7&_nc_eui2=AeFZMmb_FlqCRRgnelgYhxiFpZqT-8Ga2sClmpP7wZrawPwmeZtTEUZ8tOWx6T8z5aS-rdXgL_Fd-r9q_GnE8fJD&_nc_ohc=njN6od40bdEQ7kNvwHNopHn&_nc_oc=AdpwRl8VJmiMXTPSYTFpCqSZwZKw8P4vusURvcSoPti2VqmsWJt_xVjBcR2M9Q7VUkQ&_nc_zt=23&_nc_ht=scontent.xx&edm=AOgd6ZUEAAAA&_nc_gid=ehk0wbwz5Iw6WO-_2hup8w&_nc_tpa=Q5bMBQF2MIO2p695BGKhT-cQ7jLWECD_39TrvRQJHefnrIxjOPiGRxizHjsDNh-s2ppVhcymvWinl181&stp=c0.5000x0.5000f_dst-emg0_q75_tt6&ur=5fad0e&_nc_sid=58080a&oh=00_Af1ZEcVsgT9lQynNunsW7SJ2LkkYqItxOwSEQgh9j2jWpQ&oe=69D78F40"},
-    {n:"B1 · CLT TURB",leads:442,cpl:3.67,ctr:1.79,thumb:"https://scontent.xx.fbcdn.net/v/t45.1600-4/598891418_25336259806025779_8557944880098154444_n.png?_nc_cat=106&ccb=1-7&_nc_eui2=AeH0YTOnQIIcPoAhOU4aWXLGmjqYaZPUVzGaOphpk9RXMdYBnFVD8RKSakAdrRdOjKPozcUfcZpCzC7ix4VLNriq&_nc_ohc=hANM_zxZVaYQ7kNvwExDzRT&_nc_oc=Adpg7M37itsDLFnVF18SSJqkTz1JmmG6uX41fq8XPFbcfw-wekxBBoer26_SqErxne0&_nc_zt=1&_nc_ht=scontent.xx&edm=AOgd6ZUEAAAA&_nc_gid=ehk0wbwz5Iw6WO-_2hup8w&_nc_tpa=Q5bMBQEfuwTDxBV5T5aESTG_PsoY34dsSNc2qzxU9XUZRB0poe4EzHwmk7xrXtzAwZfcDsMbC7mKRroZ&stp=c0.5000x0.5000f_dst-emg0_q75_tt6&ur=52f3c4&_nc_sid=58080a&oh=00_Af2qXXhgpoeSAdosIu-T6NvLHSMxCdn36xoNrcKep8wu5Q&oe=69D78DF3"},
-  ],
-  FGTS:[
-    {n:"A -1 · FGTS ENG WT",leads:606,cpl:1.82,ctr:2.39,thumb:"https://scontent.xx.fbcdn.net/v/t15.5256-10/656929727_915859451041978_2218916087927416004_n.jpg?_nc_cat=103&ccb=1-7&_nc_eui2=AeH4yzKLBI4TkKvXYsRwTSZAqk4LfEFj-c2qTgt8QWP5zd-DJh2m1Scd_NGsdWR8yI98pkVmE7Pyr2x0tCkPd8M1&_nc_ohc=0Dd_tIr5jYkQ7kNvwGL-eF3&_nc_oc=Adr0wo-VmwTgTdfSzQRJFi1G045sEeDzwyiJjXH7fBuWWXYCO4g9uCcOFtxkZH8T_nk&_nc_zt=23&_nc_ht=scontent.xx&edm=AOgd6ZUEAAAA&_nc_gid=ehk0wbwz5Iw6WO-_2hup8w&_nc_tpa=Q5bMBQHPqxBWSz0qUYygKXf57NKJN7-SETT8Y2jqNRDg8hkfxeXvaT9oZIoVDC5UfkpyLq8WOR4Ib45w&stp=c0.5000x0.5000f_dst-emg0_q75_tt6&ur=b696e2&_nc_sid=58080a&oh=00_Af0pGCfK3rIY2fXsY-XqtOjqc4bV2g1W7_8QMfBafqpvMQ&oe=69D792B9"},
-    {n:"A -2 · FGTS ENG WT",leads:427,cpl:1.63,ctr:3.8,thumb:"https://scontent.xx.fbcdn.net/v/t15.5256-10/656921448_26844384061825428_4946258112970372748_n.jpg?_nc_cat=105&ccb=1-7&_nc_eui2=AeGBmVCPiK43dQ6GRfDJ_b5eOIoivjrqd-Q4iiK-Oup35M2APK16diq0Pa5q12lftOsRkRNMMpwNuvHo00HbQK29&_nc_ohc=Dh912O2t28AQ7kNvwH7i3xL&_nc_oc=AdrJcYEEk4Rr3jhkOmRkzRZG2DR37qjc9hHEAPXpVeTiT0eAYwQ4Xbfznmw4ZrzdPJM&_nc_zt=23&_nc_ht=scontent.xx&edm=AOgd6ZUEAAAA&_nc_gid=ehk0wbwz5Iw6WO-_2hup8w&_nc_tpa=Q5bMBQG5MUfta_XV2QctFpyqxCWsTDJH3Ga-uhmbJNHGeAiZl0gTJqCekBC8o-v8oEwSHIlHJKfOw9nq&stp=c0.5000x0.5000f_dst-emg0_q75_tt6&ur=b696e2&_nc_sid=58080a&oh=00_Af0n5iCOG6MzeZGN2V4hnWPgbb-0ipzTh7YzIaqbdcy0Gw&oe=69D78BEA"},
-    {n:"A — 2 (v2)",leads:383,cpl:2.71,ctr:4.38,thumb:"https://scontent.xx.fbcdn.net/v/t45.1600-4/598901620_25336024812715945_7847533289635566054_n.png?_nc_cat=105&ccb=1-7"},
-    {n:"A -2 v2 · FGTS",leads:191,cpl:1.65,ctr:4.07,thumb:""},
-  ],
-};
-
-// ═══ ESTADO ══════════════════════════════════════════
-let period=30,mesMode=null,campF='all',chartF='geral',geralQ='all',geralCampF='all',bdF='all',showLabels=false;
-const CH={};
-Chart.register(ChartDataLabels);
-const G='#059669',O='#ea580c',GR='#6b7280',BL='#2563eb';
-const GRID='rgba(0,0,0,0.05)',TXT='#9ca3af';
-function getChartColors(){
-  const dark=document.documentElement.getAttribute('data-theme')==='dark';
-  return {
-    txt: dark?'#8b95a9':'#9ca3af',
-    grid: dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)',
-    tooltip: dark?'#1a2236':'#0f1523',
-  };
-}
-const bf={family:"'DM Sans',sans-serif",size:10};
-
-function sm(a){return a.reduce((s,v)=>(s||0)+(v||0),0);}
-function av(a){const v=a.filter(x=>x!=null&&x>0);return v.length?v.reduce((s,x)=>s+x,0)/v.length:0;}
-function cc(v){return v==null?GR:v<=1.5?G:v<=2.5?'#d97706':O;}
-function cls(v){return v==null?'':v<=1.5?'cg':v<=2.5?'cw2':'cr';}
-function fR(v){if(v==null||isNaN(v))return '—';return 'R$'+Number(v).toFixed(2).replace('.',',');}
-function fR2(v){if(v==null||isNaN(v))return '—';return 'R$'+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fN(v){return Number(v).toLocaleString('pt-BR');}
-function getDlColor(){return document.documentElement.getAttribute('data-theme')==='dark'?'#ffffff':'#111827';}
-function bo(){
-  const cc2=getChartColors();
-  return{responsive:true,maintainAspectRatio:false,resizeDelay:50,plugins:{legend:{labels:{color:cc2.txt,font:bf,boxWidth:9,padding:10}},tooltip:{backgroundColor:cc2.tooltip,borderColor:'rgba(255,255,255,.08)',borderWidth:1,titleFont:{size:10},bodyFont:{size:10}},datalabels:{display:false}},scales:{x:{ticks:{color:cc2.txt,font:bf},grid:{color:cc2.grid}},y:{ticks:{color:cc2.txt,font:bf},grid:{color:cc2.grid}}}};}
-function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
-
-function showPage(p,btn){
-  document.querySelectorAll('.page-section').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.sb-item').forEach(e=>e.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  btn.classList.add('active');
-  document.getElementById('pageTitle').textContent=p==='dash'?'Dashboard Diário':'Dados Gerais da Conta';
-  document.getElementById('pbDash').style.display=p==='dash'?'flex':'none';
-  document.getElementById('pbGeral').style.display=p==='geral'?'flex':'none';
-
-  if(p==='geral')renderGeral();
-}
-
-function setPeriod(n,lbl,btn){
-  period=n;mesMode=null;
-  document.querySelectorAll('#pbDash .pb').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('sbPeriod').textContent='Últimos '+lbl;
-  render();
-}
-function setPeriodMes(ym,lbl,btn){
-  mesMode=ym;
-  document.querySelectorAll('#pbDash .pb').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('sbPeriod').textContent=lbl;
-  render();
-}
-function setCF(f,btn){
-  chartF=f;
-  document.querySelectorAll('.cf-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  render();
-}
-function toggleLabels(checked){
-  showLabels=checked;
-  render();
-}
-function setCampF(f,btn){
-  campF=f;
-  btn.closest('.stabs').querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  buildCampTable();
-}
-function setGeralQ(q,btn){
-  geralQ=q;
-  document.querySelectorAll('#pbGeral .pb').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderGeral();
-}
-function setGeralCampF(f,btn){
-  geralCampF=f;
-  btn.closest('.stabs').querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  buildGeralCampTable();
-}
-function switchS(s,t,btn){
-  document.querySelectorAll(`[id^="${s}-"]`).forEach(p=>p.classList.remove('active'));
-  document.getElementById(`${s}-${t}`).classList.add('active');
-  btn.closest('.stabs').querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-// Daily slice
-function getIdxs(){
-  if(mesMode){
-    const ds=MES_DAYS[mesMode]||[];
-    return DAILY.days.map((d,i)=>ds.includes(d)?i:-1).filter(i=>i>=0);
-  }
-  return DAILY.days.map((_,i)=>i).slice(-Math.min(period,DAILY.days.length));
-}
-function sl(arr,idxs){return idxs.map(i=>arr[i]);}
-
-// Current camp period key
-function getCampKey(){
-  if(mesMode) return mesMode;
-  return String(period);
-}
-
-function render(){
-  const idxs=getIdxs();
-  const days=sl(DAILY.days,idxs),spend=sl(DAILY.spend,idxs),leads=sl(DAILY.leads,idxs);
-  const cpl=sl(DAILY.cpl,idxs),ctr=sl(DAILY.ctr,idxs),cpm=sl(DAILY.cpm,idxs);
-  const cltL=sl(DAILY.cltL,idxs),fgtsL=sl(DAILY.fgtsL,idxs);
-  const cltS=sl(DAILY.cltS,idxs),fgtsS=sl(DAILY.fgtsS,idxs);
-  const cltCPL=sl(DAILY.cltCPL,idxs),fgtsCPL=sl(DAILY.fgtsCPL,idxs);
-  const cltCTR=sl(DAILY.cltCTR,idxs),fgtsCTR=sl(DAILY.fgtsCTR,idxs);
-
-  const kKey=mesMode||String(period);
-  const K=KPIS_PERIODO[kKey]||{};
-  const tS=(K.spend!==undefined&&K.spend!==null)?K.spend:sm(spend);
-  const tL=(K.leads!==undefined&&K.leads!==null)?K.leads:sm(leads);
-  const avgCPL=K.cpl!=null?K.cpl:(tL>0?tS/tL:0);
-  const avgCTR=(K.ctr!==undefined&&K.ctr!==null)?K.ctr:av(ctr);
-  const avgCPM=(K.cpm!==undefined&&K.cpm!==null)?K.cpm:av(cpm);
-  const cltSpT=K.cltSpend!=null?K.cltSpend:sm(cltS);
-  const cltLT=K.cltLeads!=null?K.cltLeads:sm(cltL);
-  const fgtsSpT=K.fgtsSpend!=null?K.fgtsSpend:sm(fgtsS);
-  const fgtsLT=K.fgtsLeads!=null?K.fgtsLeads:sm(fgtsL);
-  const cltCPLav=K.cltCpl!=null?K.cltCpl:(cltLT>0?cltSpT/cltLT:0);
-  const fgtsCPLav=K.fgtsCpl!=null?K.fgtsCpl:(fgtsLT>0?fgtsSpT/fgtsLT:0);
-  const cltCTRav=(K.cltCtr!==undefined&&K.cltCtr!==null)?K.cltCtr:av(cltCTR.filter(v=>v!=null));
-  const fgtsCTRav=(K.fgtsCtr!==undefined&&K.fgtsCtr!==null)?K.fgtsCtr:av(fgtsCTR.filter(v=>v!=null));
-
-  if(days.length){
-    document.getElementById('sbDates').textContent=days[0]+(days.length>1?' → '+days[days.length-1]:'');
-  }
+SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_TAB}"
+SHEET_URL_GA = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=breakdown-gender-age"
+SHEET_URL_RG = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=breakdown-regiao"
+SHEET_URL_PT = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=breakdown-platform"
 
 
-  function dot(c,p,fmt,lb){
-    if(!p||!c)return '';
-    const ok=lb?c<p:c>p;
-    return `<div class="kpi-prev"><div class="kpi-prev-dot" style="background:${ok?G:O}"></div><div class="kpi-prev-lbl">Ant: ${fmt(p)}</div></div>`;
-  }
+# ── DOWNLOAD DE IMAGENS ───────────────────────────────
+def download_thumb(url, img_dir):
+    if not url or str(url) == "nan":
+        return ""
+    try:
+        ext = ".png" if ".png" in url.lower() else ".jpg"
+        fname = hashlib.md5(url.encode()).hexdigest()[:16] + ext
+        fpath = img_dir / fname
+        if not fpath.exists():
+            r = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+            if r.status_code == 200:
+                fpath.write_bytes(r.content)
+            else:
+                return ""
+        return "imgs/" + fname
+    except Exception:
+        return ""
 
-  document.getElementById('kpiStrip').innerHTML=`
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Investimento</div><div class="kpi-val" style="font-size:15px">${fR2(tS)}</div></div>
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Leads</div><div class="kpi-val">${fN(tL)}</div></div>
-    <div class="kpi" style="--kc:${cc(avgCPL)}"><div class="kpi-lbl">CPL Médio</div><div class="kpi-val">${fR(avgCPL)}</div></div>
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">CTR Médio</div><div class="kpi-val">${avgCTR.toFixed(2)}%</div></div>
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">CPM Médio</div><div class="kpi-val">${fR(avgCPM)}</div></div>`;
 
-  document.getElementById('prodRow').innerHTML=`
-    <div class="prod-card clt"><div class="prod-hd"><div class="prod-dot" style="background:${G}"></div><div class="prod-lbl" style="color:${G}">CLT</div></div>
-    <div class="prod-metrics">
-      <div><div class="pm-lbl">Investimento</div><div class="pm-val" style="font-size:14px">${fR2(cltSpT)}</div></div>
-      <div><div class="pm-lbl">Leads</div><div class="pm-val">${fN(cltLT)}</div></div>
-      <div><div class="pm-lbl">CPL</div><div class="pm-val" style="color:${cc(cltCPLav)}">${fR(cltCPLav)}</div></div>
-      <div><div class="pm-lbl">CTR</div><div class="pm-val">${cltCTRav.toFixed(2)}%</div></div>
-    </div></div>
-    <div class="prod-card fgts"><div class="prod-hd"><div class="prod-dot" style="background:${O}"></div><div class="prod-lbl" style="color:${O}">FGTS</div></div>
-    <div class="prod-metrics">
-      <div><div class="pm-lbl">Investimento</div><div class="pm-val" style="font-size:14px">${fR2(fgtsSpT)}</div></div>
-      <div><div class="pm-lbl">Leads</div><div class="pm-val">${fN(fgtsLT)}</div></div>
-      <div><div class="pm-lbl">CPL</div><div class="pm-val" style="color:${cc(fgtsCPLav)}">${fR(fgtsCPLav)}</div></div>
-      <div><div class="pm-lbl">CTR</div><div class="pm-val">${fgtsCTRav.toFixed(2)}%</div></div>
-    </div></div>`;
+# ── LER PLANILHA ──────────────────────────────────────
+def load_sheet():
+    print(f"Lendo planilha...")
+    df = pd.read_csv(SHEET_URL)
 
-  // Main chart
-  dc('chMain');
-  const f=chartF;
-  let leadsDS,spArr,cplArr;
-  if(f==='geral'){leadsDS=[{label:'CLT',data:cltL,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2,type:'bar'},{label:'FGTS',data:fgtsL,backgroundColor:'rgba(234,88,12,.75)',stack:'s',borderRadius:2,type:'bar'}];spArr=spend;cplArr=cpl;}
-  else if(f==='clt'){leadsDS=[{label:'Leads CLT',data:cltL,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2,type:'bar'}];spArr=cltS;cplArr=cltCPL;}
-  else{leadsDS=[{label:'Leads FGTS',data:fgtsL,backgroundColor:'rgba(234,88,12,.75)',stack:'s',borderRadius:2,type:'bar'}];spArr=fgtsS;cplArr=fgtsCPL;}
-  // Leads: sem rótulo
-  leadsDS=leadsDS.map(d=>({...d,datalabels:{display:false}}));
-  
-  // Investimento: rótulo acima, sem casas decimais, preto
-  const spDs={label:'Invest.',data:spArr,borderColor:'#00c49a',backgroundColor:'transparent',tension:.3,pointRadius:2,borderWidth:2,type:'line',yAxisID:'y1',spanGaps:false,
-    datalabels:{display:showLabels,font:{size:9,weight:'bold'},anchor:'end',align:'top',offset:2,formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null,color:getDlColor(),clip:false}};
-  
-  // CPL: rótulo abaixo da linha, preto escuro, 1 casa decimal
-  const cplDs={label:'CPL',data:cplArr,borderColor:document.documentElement.getAttribute('data-theme')==='dark'?'#aab':'#333',borderDash:[5,3],backgroundColor:'transparent',pointRadius:2,borderWidth:1.5,tension:.3,spanGaps:false,type:'line',yAxisID:'y2',
-    datalabels:{display:showLabels,font:{size:9,weight:'bold'},anchor:'end',align:'bottom',offset:2,formatter:v=>v!=null&&v>0?'R$'+v.toFixed(1):null,color:getDlColor(),clip:false}};
-
-  CH['chMain']=new Chart(document.getElementById('chMain'),{data:{labels:days,datasets:[...leadsDS,spDs,cplDs]},options:{...bo(),scales:{
-    x:{ticks:{color:TXT,font:bf,maxTicksLimit:12},grid:{color:GRID}},
-    y:{ticks:{color:TXT,font:bf},grid:{color:GRID},stacked:f==='geral'},
-    y1:{position:'right',ticks:{color:'#00a07a',font:bf,callback:v=>'R$'+v.toLocaleString()},grid:{display:false}},
-    y2:{position:'right',ticks:{color:'#555',font:bf,callback:v=>'R$'+v.toFixed(2)},grid:{display:false},offset:true},
-  }}});
-
-  dc('chCTR');
-  let ctrDS;
-  if(f==='geral') ctrDS=[{label:'CTR',data:ctr,borderColor:BL,backgroundColor:'rgba(37,99,235,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2},{label:'Meta 2,5%',data:days.map(()=>2.5),borderColor:'rgba(0,0,0,.1)',borderDash:[4,4],pointRadius:0,borderWidth:1,spanGaps:true}];
-  else if(f==='clt') ctrDS=[{label:'CTR CLT',data:cltCTR,borderColor:G,backgroundColor:'rgba(5,150,105,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2,spanGaps:false},{label:'Meta 2,5%',data:days.map(()=>2.5),borderColor:'rgba(0,0,0,.1)',borderDash:[4,4],pointRadius:0,borderWidth:1,spanGaps:true}];
-  else ctrDS=[{label:'CTR FGTS',data:fgtsCTR,borderColor:O,backgroundColor:'rgba(234,88,12,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2,spanGaps:false},{label:'Meta 2,5%',data:days.map(()=>2.5),borderColor:'rgba(0,0,0,.1)',borderDash:[4,4],pointRadius:0,borderWidth:1,spanGaps:true}];
-  const ctrDlDs=ctrDS.map((d,i)=>({...d,datalabels:{display:showLabels&&i===0,color:'#2563eb',font:{size:9,weight:'bold'},formatter:v=>v!=null?v.toFixed(1)+'%':null,anchor:'top',align:'top',offset:2}}));
-  CH['chCTR']=new Chart(document.getElementById('chCTR'),{type:'line',data:{labels:days,datasets:ctrDlDs},options:{...bo(),scales:{x:{ticks:{color:TXT,font:bf,maxTicksLimit:8},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf,callback:v=>v+'%'},grid:{color:GRID},min:0}}}});
-
-  dc('chCPM');
-  const cpmDl={datalabels:{display:showLabels,color:'#7c3aed',font:{size:9,weight:'bold'},formatter:v=>v!=null?'R$'+v.toFixed(0):null,anchor:'top',align:'top',offset:2}};
-  CH['chCPM']=new Chart(document.getElementById('chCPM'),{type:'line',data:{labels:days,datasets:[{label:'CPM',data:cpm,...cpmDl,borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2}]},options:{...bo(),scales:{x:{ticks:{color:TXT,font:bf,maxTicksLimit:8},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf,callback:v=>'R$'+v.toFixed(0)},grid:{color:GRID},min:0}}}});
-
-  const ym=getCampKey();
-  const mesLbls={'2026-04':'Abr/26','2026-03':'Mar/26','2026-02':'Fev/26','2026-01':'Jan/26','2025-12':'Dez/25','2025-11':'Nov/25','2025-10':'Out/25','2025-09':'Set/25'};
-  const lbl=mesMode?(mesLbls[mesMode]||mesMode):`últimos ${period} dias`;
-  document.getElementById('campLbl').textContent=`— ${lbl}`;
-
-  buildCampTable();
-  buildAds();
-  buildBreakdowns();
-}
-
-// ═══ CAMP TABLE + SPARKLINES ══════════════════════════
-const OPEN=new Set();
-function buildCampTable(){
-  const ym=getCampKey();
-  const camps=CAMPS_MES[ym]||CAMPS_MES['30']||[];
-  const data=campF==='all'?camps:camps.filter(c=>c.product===campF);
-
-  // For months without daily data, show accordion by month
-  if((mesMode==='2025-12'||mesMode==='2025-11')&&data.length){
-    renderMesAccordion(data,ym);return;
-  }
-  if(!mesMode&&period>30){renderMesAccordion(data,ym);return;}
-
-  const tbl=document.getElementById('campContainer');
-  const mx=Math.max(...data.map(d=>d.leads),1);
-  let rows='';
-  data.forEach((c,i)=>{
-    const cid=`c${ym.replace('-','')}${i}`;
-    const hasMulti=c.conjs&&c.conjs.length>1;
-    rows+=`<tr class="camp-row" onclick="toggleC('${cid}')">
-      <td style="width:20px;text-align:center;color:var(--muted2);font-size:11px">${hasMulti?(OPEN.has(cid)?'▼':'▶'):''}</td>
-      <td style="font-weight:700;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.n}</td>
-      <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)'};color:${c.product==='CLT'?G:O};font-weight:700">${c.product}</span></td>
-      <td class="num">${fR(c.spend)}</td>
-      <td class="num">${fN(c.leads)}</td>
-      <td class="num ${cls(c.cpl)}">${fR(c.cpl)}</td>
-      <td class="num">${fR(c.cpm)}</td>
-      <td class="num" style="color:${(c.ctr||0)>=3?G:(c.ctr||0)>=2?'#d97706':'#9ca3af'}">${c.ctr!=null?c.ctr.toFixed(2)+'%':'—'}</td>
-      <td><canvas id="spk-${cid}" width="72" height="28"></canvas></td>
-    </tr>`;
-    if(c.conjs&&c.conjs.length>0){
-      c.conjs.forEach((j,ji)=>{
-        const jid=`${cid}j${ji}`;
-        const hidden=!OPEN.has(cid)?'hidden':'';
-        rows+=`<tr class="conj-row ${hidden}" data-cid="${cid}">
-          <td style="text-align:center;color:#d1d5db;font-size:11px">↳</td>
-          <td class="conj-name">${j.n}</td>
-          <td></td>
-          <td class="num" style="color:var(--muted2)">${fR(j.spend)}</td>
-          <td class="num" style="color:var(--muted2)">${fN(j.leads)}</td>
-          <td class="num ${cls(j.cpl)}">${fR(j.cpl)}</td>
-          <td class="num" style="color:var(--muted2)">${fR(j.cpm)}</td>
-          <td class="num" style="color:${(j.ctr||0)>=3?G:(j.ctr||0)>=2?'#d97706':'#9ca3af'}">${j.ctr!=null?j.ctr.toFixed(2)+'%':'—'}</td>
-          <td></td>
-        </tr>`;
-      });
+    col_map = {
+        "Date": "date",
+        "Campaign Name": "campaign",
+        "Adset Name": "adset",
+        "Ad Name": "ad",
+        "Thumbnail URL": "thumb",
+        "Spend (Cost, Amount Spent)": "spend",
+        "Impressions": "impressions",
+        "Clicks": "clicks",
+        "Action Link Clicks": "link_clicks",
+        "Action Messaging Conversations Started (Onsite Conversion)": "leads",
     }
-  });
+    df = df.rename(columns={k: v for k, v in col_map.items() if k in df.columns})
 
-  if(window.innerWidth<=768){
-    // Mobile: card layout
-    let cards='';
-    data.forEach((c,i)=>{
-      const cid=`c${ym.replace('-','')}${i}`;
-      const hasMulti=c.conjs&&c.conjs.length>1;
-      const prodColor=c.product==='CLT'?G:O;
-      const prodBg=c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)';
-      cards+=`<div class="camp-card">
-        <div class="camp-card-hd" onclick="toggleCard('${cid}')">
-          <div class="camp-card-name">${c.n}</div>
-          <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${prodBg};color:${prodColor};font-weight:700;white-space:nowrap">${c.product}</span>
-          ${hasMulti?`<span style="color:var(--muted);font-size:12px">${OPEN.has(cid)?'▼':'▶'}</span>`:''}
-        </div>
-        <div class="camp-card-metrics">
-          <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(c.spend)}</div></div>
-          <div class="camp-card-metric"><div class="lbl">Leads</div><div class="val">${fN(c.leads)}</div></div>
-          <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(c.cpl)}">${fR(c.cpl)}</div></div>
-          <div class="camp-card-metric"><div class="lbl">CTR</div><div class="val">${c.ctr!=null?c.ctr.toFixed(2)+'%':'—'}</div></div>
-        </div>
-        ${hasMulti?`<div class="camp-card-conjs ${OPEN.has(cid)?'open':''}" id="conj-${cid}">
-          ${c.conjs.map(j=>`<div class="conj-card">
-            <div class="conj-card-name">↳ ${j.n}</div>
-            <div class="conj-card-metrics">
-              <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(j.spend)}</div></div>
-              <div class="camp-card-metric"><div class="lbl">Leads</div><div class="val">${fN(j.leads)}</div></div>
-              <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(j.cpl)}">${fR(j.cpl)}</div></div>
-            </div>
-          </div>`).join('')}
-        </div>`:''}
-      </div>`;
-    });
-    tbl.innerHTML=cards;
-    return;
-  }
+    df["date"] = pd.to_datetime(df["date"], errors="coerce")
+    for c in ["spend", "leads", "impressions", "clicks", "link_clicks"]:
+        if c in df.columns:
+            df[c] = pd.to_numeric(
+                df[c].astype(str).str.replace(",", ".", regex=False),
+                errors="coerce"
+            ).fillna(0)
 
-  tbl.innerHTML=`<div class="tc"><table>
-    <thead><tr><th style="width:20px"></th><th>Campanha</th><th class="num">Produto</th><th class="num">Invest.</th><th class="num">Leads</th><th class="num">CPL</th><th class="num">CPM</th><th class="num">CTR</th><th style="width:80px">Tendência CPL</th></tr></thead>
-    <tbody>${rows}</tbody></table></div>`;
+    df["product"] = df["campaign"].apply(
+        lambda c: "FGTS" if "FGTS" in str(c).upper() else "CLT"
+    )
+    df["ym"] = df["date"].dt.to_period("M")
+    df = df.dropna(subset=["date"])
 
-  // Draw sparklines helper
-  function drawSpk(canvasId, spkData){
-    const cv=document.getElementById(canvasId);
-    if(!cv||!spkData)return;
-    const vals=spkData.filter(v=>v!=null);
-    if(vals.length<1)return;
-    // If only 1 point, duplicate it so we still see a line
-    const plotData = vals.length===1 ? [vals[0], vals[0]] : spkData;
-    const plotLabels = vals.length===1 ? [0,1] : spkData.map((_,j)=>j);
-    const last=vals[vals.length-1], first=vals[0];
-    const col=last<=first?G:O;
-    new Chart(cv,{type:'line',data:{labels:plotLabels,datasets:[{data:plotData,borderColor:col,backgroundColor:col===G?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)',fill:true,tension:.35,pointRadius:plotData.map(v=>v!=null?2:0),pointBackgroundColor:col,borderWidth:1.5,spanGaps:false,datalabels:{display:false}}]},
-      options:{responsive:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:false},datalabels:{display:false}},scales:{x:{display:false},y:{display:false,min:Math.min(...vals)*.8,max:Math.max(...vals)*1.2}}}});
-  }
-
-  // Draw camp sparklines
-  data.forEach((c,i)=>{
-    const cid=`c${ym.replace('-','')}${i}`;
-    drawSpk(`spk-${cid}`, c.spk);
-    // Draw conjunto sparklines (they appear when opened — use MutationObserver to draw on reveal)
-    if(c.conjs&&c.conjs.length>0){
-      c.conjs.forEach((j,ji)=>{
-        const jid=`${cid}j${ji}`;
-        // Draw immediately (hidden rows still have canvas in DOM)
-        // Use CPL trend from parent camp spk as proxy, or just show the single CPL point
-        const jSpk = c.spk ? [...c.spk.slice(0,-1), j.cpl] : [j.cpl];
-        drawSpk(`spk-${jid}`, jSpk);
-      });
-    }
-  });
-}
-
-function renderMesAccordion(data,ym){
-  // For months without daily breakdown, show a simple accordion
-  const tbl=document.getElementById('campContainer');
-  const html=`<div class="mes-accordion">
-    <div class="mes-header" onclick="toggleMesAcc(this)">
-      <span>${ym} — ${data.length} campanhas</span>
-      <span class="mes-arrow">▶</span>
-    </div>
-    <div class="mes-body">
-      <div class="tc"><table>
-        <thead><tr><th style="width:20px"></th><th>Campanha</th><th class="num">Produto</th><th class="num">Invest.</th><th class="num">Leads</th><th class="num">CPL</th><th class="num">CPM</th><th class="num">CTR</th></tr></thead>
-        <tbody>${data.map((c,i)=>{
-          const cid=`cm${ym.replace('-','')}${i}`;
-          const hasMulti=c.conjs&&c.conjs.length>1;
-          let r=`<tr class="camp-row" onclick="toggleC('${cid}')">
-            <td style="width:20px;text-align:center;color:var(--muted2);font-size:11px">${hasMulti?(OPEN.has(cid)?'▼':'▶'):''}</td>
-            <td style="font-weight:700">${c.n}</td>
-            <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)'};color:${c.product==='CLT'?G:O};font-weight:700">${c.product}</span></td>
-            <td class="num">${fR(c.spend)}</td><td class="num">${fN(c.leads)}</td>
-            <td class="num ${cls(c.cpl)}">${fR(c.cpl)}</td>
-            <td class="num">${fR(c.cpm)}</td>
-            <td class="num" style="color:${(c.ctr||0)>=3?G:(c.ctr||0)>=2?'#d97706':'#9ca3af'}">${c.ctr!=null?c.ctr.toFixed(2)+'%':'—'}</td>
-          </tr>`;
-          if(c.conjs&&c.conjs.length>0){
-            c.conjs.forEach(j=>{
-              const h=OPEN.has(cid)?'':'hidden';
-              r+=`<tr class="conj-row ${h}" data-cid="${cid}">
-                <td style="text-align:center;color:#d1d5db">↳</td><td class="conj-name">${j.n}</td><td></td>
-                <td class="num" style="color:var(--muted2)">${fR(j.spend)}</td><td class="num" style="color:var(--muted2)">${fN(j.leads)}</td>
-                <td class="num ${cls(j.cpl)}">${fR(j.cpl)}</td><td class="num" style="color:var(--muted2)">${fR(j.cpm)}</td>
-                <td class="num" style="color:${(j.ctr||0)>=3?G:(j.ctr||0)>=2?'#d97706':'#9ca3af'}">${j.ctr!=null?j.ctr.toFixed(2)+'%':'—'}</td>
-              </tr>`;
-            });
-          }
-          return r;
-        }).join('')}</tbody>
-      </table></div>
-    </div>
-  </div>`;
-  tbl.innerHTML=html;
-}
-
-function toggleMesAcc(el){
-  el.classList.toggle('open');
-  el.nextElementSibling.classList.toggle('open');
-}
-
-function toggleCard(id){
-  const el=document.getElementById('conj-'+id);
-  if(!el)return;
-  const isOpen=OPEN.has(id);
-  if(isOpen){OPEN.delete(id);el.classList.remove('open');}
-  else{OPEN.add(id);el.classList.add('open');}
-}
-function toggleC(id){
-  const rows=document.querySelectorAll(`[data-cid="${id}"]`);
-  const isOpen=OPEN.has(id);
-  if(isOpen){OPEN.delete(id);rows.forEach(r=>r.classList.add('hidden'));}
-  else{OPEN.add(id);rows.forEach(r=>r.classList.remove('hidden'));}
-  // Update arrow
-  document.querySelectorAll('.camp-row').forEach(tr=>{
-    if(tr.getAttribute('onclick')===`toggleC('${id}')`){
-      const td=tr.querySelector('td:first-child');
-      if(td)td.textContent=OPEN.has(id)?'▼':'▶';
-    }
-  });
-}
-
-// ═══ ADS GRID ═══════════════════════════════════════
-function buildAds(){
-  const aKey=mesMode||String(period);
-  // ADS_DATA is keyed by period: {"1":{CLT:[],FGTS:[]},"7":{...},...}
-  const periodAds=(ADS_DATA[aKey]&&ADS_DATA[aKey]['CLT'])?ADS_DATA[aKey]:(ADS_DATA['30']||ADS_DATA||{});
-  // Build combined "Todas" list sorted by leads
-  const allAds=[...(periodAds['CLT']||[]).map(a=>({...a,prod:'CLT'})),...(periodAds['FGTS']||[]).map(a=>({...a,prod:'FGTS'}))].sort((a,b)=>b.leads-a.leads);
-  
-  const targets=[['ALL',allAds],['CLT',periodAds['CLT']||[]],['FGTS',periodAds['FGTS']||[]]];
-  targets.forEach(([key,list])=>{
-    const el=document.getElementById('ag'+key);
-    if(!el)return;
-    el.innerHTML='';
-    if(list.length===0){
-      el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px">Nenhum criativo disponível</div>';
-      return;
-    }
-    list.forEach(ad=>{
-      const cC=cc(ad.cpl);
-      const prodBadge=ad.prod?(ad.prod==='CLT'?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(5,150,105,.15);color:${G};font-weight:700;margin-left:4px">CLT</span>`:`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(234,88,12,.15);color:${O};font-weight:700;margin-left:4px">FGTS</span>`):'';
-      const d=document.createElement('div');d.className='ad-card';
-      const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'ad-img-placeholder\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
-      d.innerHTML=`${img}<div class="ad-info"><div class="ad-name">${ad.n}${key==='ALL'?prodBadge:''}</div><div class="ad-stats"><div><div class="as-l">Leads</div><div class="as-v">${fN(ad.leads)}</div></div><div><div class="as-l">CPL</div><div class="as-v" style="color:${cC}">${fR(ad.cpl)}</div></div></div></div>`;
-      el.appendChild(d);
-    });
-  });
-}
-// ═══ DADOS GERAIS ═══════════════════════════════════
-// Q ranges (3 months each)
-const QR={
-  'all':null,
-  'q1-26':[14,16],  // Jan Fev Mar 2026
-  'q4-25':[10,12],  // Out Nov Dez 2025 (wait - Set Oct Nov Dec)
-  'q3-25':[6,8],    // Mai Jun Jul Ago 2025 (but Q3 = Jul Ago Set)
-  'q2-25':[5,7],    // Abr Mai Jun 2025
-};
-// Actually correcting: standard quarters
-// Q1 = Jan Feb Mar, Q2 = Apr May Jun, Q3 = Jul Aug Sep, Q4 = Oct Nov Dec
-const QR2={
-  'all':null,
-  'q1-26':[14,16],   // Jan/26 Feb/26 Mar/26  → indices 14,15,16
-  'q4-25':[11,13],   // Out/25 Nov/25 Dez/25  → indices 11,12,13
-  'q3-25':[8,10],    // Jul/25 Ago/25 Set/25  → indices 8,9,10
-  'q2-25':[5,7],     // Abr/25 Mai/25 Jun/25  → indices 5,6,7
-};
-
-function renderGeral(){
-  const range=QR2[geralQ];
-  const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
-  const lbl=MONTHLY.lbl.slice(s,e);
-  const cltS2=MONTHLY.cltS.slice(s,e),fgtsS2=MONTHLY.fgtsS.slice(s,e);
-  const cplG2=MONTHLY.cplG.slice(s,e),cltCPL2=MONTHLY.cltCPL.slice(s,e),fgtsCPL2=MONTHLY.fgtsCPL.slice(s,e);
-  const cltL2=MONTHLY.cltL.slice(s,e),fgtsL2=MONTHLY.fgtsL.slice(s,e);
-
-  const tS=sm(cltS2)+sm(fgtsS2),tL=sm(cltL2)+sm(fgtsL2);
-  const cltSpT=sm(cltS2),fgtsSpT=sm(fgtsS2),cltLT=sm(cltL2),fgtsLT=sm(fgtsL2);
-  const qlbl={'all':'Todos os meses','q1-26':'T1 2026 (Jan–Mar)','q4-25':'T4 2025 (Out–Dez)','q3-25':'T3 2025 (Jul–Set)','q2-25':'T2 2025 (Abr–Jun)'}[geralQ]||'';
-  document.getElementById('geralSub').textContent=qlbl;
-  document.getElementById('rankLbl').textContent='— '+qlbl;
-  document.getElementById('geralCampLbl').textContent='— '+qlbl;
-  document.getElementById('geralPubLbl').textContent='— '+qlbl;
-
-  document.getElementById('geralKpis').innerHTML=`
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Investimento</div><div class="kpi-val">R$${(tS/1000).toFixed(1)}k</div></div>
-    <div class="kpi" style="--kc:#334155"><div class="kpi-lbl">Total Leads</div><div class="kpi-val">${fN(tL)}</div></div>
-    <div class="kpi" style="--kc:${cc(tL>0?tS/tL:0)}"><div class="kpi-lbl">CPL Geral</div><div class="kpi-val">${fR(tL>0?tS/tL:0)}</div></div>
-    <div class="kpi" style="--kc:${G}"><div class="kpi-lbl">CPL CLT</div><div class="kpi-val" style="color:${G}">${fR(cltLT>0?cltSpT/cltLT:0)}</div></div>
-    <div class="kpi" style="--kc:${O}"><div class="kpi-lbl">CPL FGTS</div><div class="kpi-val" style="color:${O}">${fR(fgtsLT>0?fgtsSpT/fgtsLT:0)}</div></div>`;
-
-  document.getElementById('geralProd').innerHTML=`
-    <div class="prod-card clt"><div class="prod-hd"><div class="prod-dot" style="background:${G}"></div><div class="prod-lbl" style="color:${G}">CLT</div></div>
-    <div class="prod-metrics">
-      <div><div class="pm-lbl">Investimento</div><div class="pm-val">R$${(cltSpT/1000).toFixed(1)}k</div></div>
-      <div><div class="pm-lbl">Leads</div><div class="pm-val">${fN(cltLT)}</div></div>
-      <div><div class="pm-lbl">CPL</div><div class="pm-val" style="color:${G}">${fR(cltLT>0?cltSpT/cltLT:0)}</div></div>
-      <div><div class="pm-lbl">Meses</div><div class="pm-val">${cltS2.filter(v=>v>0).length}</div></div>
-    </div></div>
-    <div class="prod-card fgts"><div class="prod-hd"><div class="prod-dot" style="background:${O}"></div><div class="prod-lbl" style="color:${O}">FGTS</div></div>
-    <div class="prod-metrics">
-      <div><div class="pm-lbl">Investimento</div><div class="pm-val">R$${(fgtsSpT/1000).toFixed(1)}k</div></div>
-      <div><div class="pm-lbl">Leads</div><div class="pm-val">${fN(fgtsLT)}</div></div>
-      <div><div class="pm-lbl">CPL</div><div class="pm-val" style="color:${O}">${fR(fgtsLT>0?fgtsSpT/fgtsLT:0)}</div></div>
-      <div><div class="pm-lbl">Meses</div><div class="pm-val">${fgtsS2.filter(v=>v>0).length}</div></div>
-    </div></div>`;
-
-  const dlG={datalabels:{display:false}};
-  const dlInvest={datalabels:{display:showLabels,color:getDlColor(),font:{size:9,weight:'bold'},anchor:'end',align:'top',offset:2,formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null,clip:false}};
-  const dlCPL={datalabels:{display:showLabels,color:getDlColor(),font:{size:9,weight:'bold'},anchor:'end',align:'top',offset:2,formatter:v=>v!=null&&v>0?'R$'+v.toFixed(1):null,clip:false}};
-
-  dc('chGeralMensal');
-  const dlCLT={datalabels:{display:showLabels,color:getDlColor(),font:{size:9,weight:'bold'},anchor:'center',align:'center',formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null,clip:true}};
-  const dlFGTS={datalabels:{display:showLabels,color:getDlColor(),font:{size:9,weight:'bold'},anchor:'center',align:'center',formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null,clip:true}};
-  CH['chGeralMensal']=new Chart(document.getElementById('chGeralMensal'),{type:'bar',data:{labels:lbl,datasets:[{label:'CLT',data:cltS2,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2,...dlCLT},{label:'FGTS',data:fgtsS2,backgroundColor:'rgba(234,88,12,.7)',stack:'s',borderRadius:2,...dlFGTS}]},options:{...bo(),scales:{x:{...bo().scales.x,stacked:true},y:{...bo().scales.y,stacked:true,ticks:{...bo().scales.y.ticks,callback:v=>'R$'+v.toLocaleString()}}}}});
-  dc('chGeralCPL');
-  CH['chGeralCPL']=new Chart(document.getElementById('chGeralCPL'),{type:'line',data:{labels:lbl,datasets:[{label:'Geral',data:cplG2,borderColor:GR,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false,...dlCPL},{label:'CLT',data:cltCPL2,borderColor:G,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false,...dlG},{label:'FGTS',data:fgtsCPL2,borderColor:O,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false,...dlG}]},options:{...bo(),scales:{x:{...bo().scales.x},y:{...bo().scales.y,ticks:{...bo().scales.y.ticks,callback:v=>'R$'+v.toFixed(2)}}}}});
-  dc('chGeralLeads');
-  CH['chGeralLeads']=new Chart(document.getElementById('chGeralLeads'),{type:'bar',data:{labels:lbl,datasets:[{label:'CLT',data:cltL2,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2,...dlG},{label:'FGTS',data:fgtsL2,backgroundColor:'rgba(234,88,12,.75)',stack:'s',borderRadius:2,...dlG}]},options:{...bo(),scales:{x:{...bo().scales.x,stacked:true},y:{...bo().scales.y,stacked:true}}}});
-
-  // Rankings
-  const withData=lbl.map((l,i)=>({l,cpl:cplG2[i],leads:(cltL2[i]||0)+(fgtsL2[i]||0)})).filter(m=>m.cpl!=null&&m.leads>50);
-  const bCPL=[...withData].sort((a,b)=>a.cpl-b.cpl).slice(0,6);
-  const bLeads=[...withData].sort((a,b)=>b.leads-a.leads).slice(0,6);
-  const mxL=Math.max(...bLeads.map(m=>m.leads),1);
-  const mnC=Math.min(...bCPL.map(m=>m.cpl)),mxC=Math.max(...bCPL.map(m=>m.cpl));
-  document.getElementById('rankCPL').innerHTML=bCPL.map((m,i)=>`<div class="rank-item"><div class="rank-num">${i+1}</div><div class="rank-name">${m.l}</div><div class="rank-bar"><div class="rank-bar-f" style="width:${Math.round((1-(m.cpl-mnC)/(mxC-mnC||1))*100)}%;background:${G}"></div></div><div class="rank-val ${cls(m.cpl)}">${fR(m.cpl)}</div></div>`).join('');
-  document.getElementById('rankLeads').innerHTML=bLeads.map((m,i)=>`<div class="rank-item"><div class="rank-num">${i+1}</div><div class="rank-name">${m.l}</div><div class="rank-bar"><div class="rank-bar-f" style="width:${Math.round(m.leads/mxL*100)}%;background:${BL}"></div></div><div class="rank-val" style="color:${BL}">${fN(m.leads)}</div></div>`).join('');
-
-  buildGeralCampTable();
-  buildGeralPubTable();
-}
-
-function buildGeralCampTable(){
-  const range=QR2[geralQ];
-  const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
-  const meses=MONTHLY.meses.slice(s,e);
-  const map={};
-  meses.forEach(ym=>{
-    (CAMPS_MES[ym]||[]).forEach(c=>{
-      if(geralCampF!=='all'&&c.product!==geralCampF)return;
-      const k=c.n+'|'+c.product;
-      if(!map[k])map[k]={n:c.n,product:c.product,spend:0,leads:0};
-      map[k].spend+=c.spend;map[k].leads+=c.leads;
-    });
-  });
-  const all=Object.values(map).map(c=>({...c,cpl:c.leads>0?c.spend/c.leads:null})).sort((a,b)=>b.leads-a.leads).slice(0,15);
-  const mx=Math.max(...all.map(c=>c.leads),1);
-  document.getElementById('tGeralCamp').innerHTML=`<table>
-    <thead><tr><th>#</th><th>Campanha</th><th class="num">Produto</th><th class="num">Invest.</th><th class="num">Leads</th><th class="num">CPL</th></tr></thead>
-    <tbody>${all.map((c,i)=>`<tr>
-      <td style="color:#9ca3af;font-size:10px">${i+1}</td>
-      <td style="font-weight:600;font-size:12px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.n}</td>
-      <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)'};color:${c.product==='CLT'?G:O};font-weight:700">${c.product}</span></td>
-      <td class="num">${fR(c.spend)}</td>
-      <td class="num">${fN(c.leads)}</td>
-      <td class="num ${cls(c.cpl)}">${fR(c.cpl)}</td>
-    </tr>`).join('')}</tbody></table>`;
-}
-
-function buildGeralPubTable(){
-  // Aggregate adsets across available months
-  const range=QR2[geralQ];
-  const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
-  const meses=MONTHLY.meses.slice(s,e);
-  const map={};
-  meses.forEach(ym=>{
-    (CAMPS_MES[ym]||[]).forEach(c=>{
-      (c.conjs||[]).forEach(j=>{
-        if(!map[j.n])map[j.n]={n:j.n,spend:0,leads:0};
-        map[j.n].spend+=j.spend;map[j.n].leads+=j.leads;
-      });
-    });
-  });
-  const all=Object.values(map).filter(a=>a.leads>0).map(a=>({...a,cpl:a.leads>0?a.spend/a.leads:null})).sort((a,b)=>b.leads-a.leads).slice(0,12);
-  const mx=Math.max(...all.map(a=>a.leads),1);
-  document.getElementById('tGeralPub').innerHTML=`<table>
-    <thead><tr><th>#</th><th>Conjunto / Público</th><th class="num">Invest.</th><th class="num">Leads</th><th class="num">CPL</th></tr></thead>
-    <tbody>${all.map((a,i)=>`<tr>
-      <td style="color:#9ca3af;font-size:10px">${i+1}</td>
-      <td style="font-weight:600;font-size:12px">${a.n}</td>
-      <td class="num">${fR(a.spend)}</td>
-      <td class="num">${fN(a.leads)}</td>
-      <td class="num ${cls(a.cpl)}">${fR(a.cpl)}</td>
-    </tr>`).join('')}</tbody></table>`;
-}
+    last = df["date"].max()
+    print(f"OK: {len(df)} linhas | {df['date'].min().date()} -> {last.date()}")
+    print(f"Spend total: R${df['spend'].sum():,.2f} | Leads: {int(df['leads'].sum()):,}")
+    return df
 
 
-// ═══ BREAKDOWNS ══════════════════════════════════════
-function setBdF(f,btn){
-  bdF=f;
-  btn.closest('.stabs').querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  buildBreakdowns();
-}
+# ── DADOS DIÁRIOS ─────────────────────────────────────
+def build_daily(df):
+    daily = df.groupby("date").agg(
+        spend=("spend", "sum"),
+        leads=("leads", "sum"),
+        impressions=("impressions", "sum"),
+        clicks=("clicks", "sum"),
+        link_clicks=("link_clicks", "sum"),
+    ).reset_index().sort_values("date")
 
-function buildBreakdownTable(containerId, data, hasLeads){
-  const el=document.getElementById(containerId);
-  if(!el)return;
-  if(!data||data.length===0){
-    el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">Sem dados para este período</div>';
-    return;
-  }
-  
-  if(window.innerWidth<=768){
-    // Mobile: cards
-    let cards='';
-    data.forEach(r=>{
-      const hasL=r.leads>0;
-      cards+=`<div style="background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:6px;">
-        <div style="font-weight:700;font-size:12px;margin-bottom:6px">${r.n}</div>
-        <div style="display:grid;grid-template-columns:repeat(${hasL?4:3},1fr);gap:6px;text-align:center;">
-          <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Invest.</div><div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace">${fR(r.spend)}</div></div>
-          ${hasL?`<div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Leads</div><div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace">${fN(r.leads)}</div></div>`:''}
-          ${hasL?`<div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">CPL</div><div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:${cc(r.cpl)}">${fR(r.cpl)}</div></div>`:''}
-          <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">CPM</div><div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace">${fR(r.cpm)}</div></div>
-        </div>
-      </div>`;
-    });
-    el.innerHTML=cards;
-    return;
-  }
+    daily_clt = df[df["product"] == "CLT"].groupby("date").agg(
+        spend=("spend", "sum"),
+        leads=("leads", "sum"),
+        impressions=("impressions", "sum"),
+        link_clicks=("link_clicks", "sum"),
+    ).reset_index()
 
-  // Desktop: table
-  const hasL=data.some(r=>r.leads>0);
-  const mx=Math.max(...data.map(r=>r.leads||r.spend),1);
-  let rows='';
-  data.forEach((r,i)=>{
-    const barW=Math.round((hasL?(r.leads||0):r.spend)/mx*100);
-    rows+=`<tr>
-      <td style="color:#9ca3af;font-size:10px;width:24px">${i+1}</td>
-      <td style="font-weight:600;font-size:12px">${r.n}</td>
-      <td style="width:80px;padding:0 12px">
-        <div style="background:var(--bg);border-radius:3px;height:4px;overflow:hidden">
-          <div style="width:${barW}%;height:100%;background:${G};border-radius:3px"></div>
-        </div>
-      </td>
-      <td class="num">${fR2(r.spend)}</td>
-      ${hasL?`<td class="num">${r.leads>0?fN(r.leads):'—'}</td>`:''}
-      ${hasL?`<td class="num ${cls(r.cpl)}">${fR(r.cpl)}</td>`:''}
-      <td class="num">${fR(r.cpm)}</td>
-    </tr>`;
-  });
-  
-  const hdLeads=hasL?'<th class="num">Leads</th><th class="num">CPL</th>':'';
-  el.innerHTML=`<div class="tc"><table>
-    <thead><tr><th style="width:24px">#</th><th>Segmento</th><th style="width:80px"></th><th class="num">Invest.</th>${hdLeads}<th class="num">CPM</th></tr></thead>
-    <tbody>${rows}</tbody>
-  </table></div>`;
-}
+    daily_fgts = df[df["product"] == "FGTS"].groupby("date").agg(
+        spend=("spend", "sum"),
+        leads=("leads", "sum"),
+        impressions=("impressions", "sum"),
+        link_clicks=("link_clicks", "sum"),
+    ).reset_index()
 
-function buildBreakdowns(){
-  const kKey=mesMode||String(period);
-  const bd=BREAKDOWN_DATA[kKey]||BREAKDOWN_DATA['30']||{};
-  
-  // For CLT/FGTS filter — breakdown data doesn't split by product
-  // so we show all data regardless of bdF (breakdown is account-level)
-  
-  buildBreakdownTable('bdAge', bd.age||[], true);
-  buildBreakdownTable('bdGender', bd.gender||[], true);
-  buildBreakdownTable('bdPlatform', bd.platform||[], true);
-}
+    all_days = sorted(daily["date"].unique())[-60:]
+
+    out = {k: [] for k in [
+        "days", "spend", "leads", "cpl", "ctr", "cpm",
+        "cltL", "fgtsL", "cltS", "fgtsS", "cltCPL", "fgtsCPL",
+        "cltCTR", "fgtsCTR",
+    ]}
+
+    for d in all_days:
+        r = daily[daily["date"] == d].iloc[0]
+        cr = daily_clt[daily_clt["date"] == d]
+        fr = daily_fgts[daily_fgts["date"] == d]
+
+        cl = int(cr["leads"].sum()) if len(cr) else 0
+        fl = int(fr["leads"].sum()) if len(fr) else 0
+        cs = round(float(cr["spend"].sum()), 2) if len(cr) else 0
+        fs = round(float(fr["spend"].sum()), 2) if len(fr) else 0
+        cl_imp = float(cr["impressions"].sum()) if len(cr) else 0
+        fl_imp = float(fr["impressions"].sum()) if len(fr) else 0
+        cl_lc = float(cr["link_clicks"].sum()) if len(cr) else 0
+        fl_lc = float(fr["link_clicks"].sum()) if len(fr) else 0
+
+        tl = int(r["leads"])
+        ts = float(r["spend"])
+        imp = float(r["impressions"])
+        lc = float(r["link_clicks"])
+
+        out["days"].append(pd.Timestamp(d).strftime("%d/%m"))
+        out["spend"].append(round(ts, 2))
+        out["leads"].append(tl)
+        out["cpl"].append(round(ts / tl, 2) if tl > 0 else None)
+        out["ctr"].append(round(lc / imp * 100, 2) if imp > 0 else None)
+        out["cpm"].append(round(ts / imp * 1000, 2) if imp > 0 else None)
+        out["cltL"].append(cl)
+        out["fgtsL"].append(fl)
+        out["cltS"].append(cs)
+        out["fgtsS"].append(fs)
+        out["cltCPL"].append(round(cs / cl, 2) if cl > 0 else None)
+        out["fgtsCPL"].append(round(fs / fl, 2) if fl > 0 else None)
+        out["cltCTR"].append(round(cl_lc / cl_imp * 100, 2) if cl_imp > 0 else None)
+        out["fgtsCTR"].append(round(fl_lc / fl_imp * 100, 2) if fl_imp > 0 else None)
+
+    last_day = out["days"][-1] if out["days"] else "—"
+    return out, last_day, all_days
 
 
-render();
-buildAds();
-buildBreakdowns();
-</script>
-<script>
-function toggleTheme(){
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  if(isDark){
-    document.documentElement.removeAttribute('data-theme');
-    document.getElementById('themeIcon').textContent = '🌙';
-    document.getElementById('themeLabel').textContent = 'Dark';
-    localStorage.setItem('credi-theme','light');
-  } else {
-    document.documentElement.setAttribute('data-theme','dark');
-    document.getElementById('themeIcon').textContent = '☀️';
-    document.getElementById('themeLabel').textContent = 'Claro';
-    localStorage.setItem('credi-theme','dark');
-  }
-  render();
-}
-// Restore theme on load
-(function(){
-  const saved = localStorage.getItem('credi-theme');
-  if(saved === 'dark'){
-    document.documentElement.setAttribute('data-theme','dark');
-    document.addEventListener('DOMContentLoaded',function(){
-      document.getElementById('themeIcon').textContent = '☀️';
-      document.getElementById('themeLabel').textContent = 'Claro';
-    });
-  }
-})();
+# ── KPIs POR PERÍODO ──────────────────────────────────
+def build_kpis(df, all_days):
+    last = pd.Timestamp(all_days[-1])
+    kpis = {}
 
-function toggleSidebar(){
-  document.querySelector('.sb').classList.toggle('open');
-  document.getElementById('overlay').classList.toggle('open');
-}
-function closeSidebar(){
-  document.querySelector('.sb').classList.remove('open');
-  document.getElementById('overlay').classList.remove('open');
-}
-// Close sidebar when clicking a menu item on mobile
-document.querySelectorAll('.sb-item').forEach(function(el){
-  el.addEventListener('click',function(){ if(window.innerWidth<=768) closeSidebar(); });
-});
-</script>
-</body>
-</html>
+    for n in [1, 7, 14, 30]:
+        start = last - pd.Timedelta(days=n - 1)
+        p = df[(df["date"] >= start) & (df["date"] <= last)]
+        clt = p[p["product"] == "CLT"]
+        fgts = p[p["product"] == "FGTS"]
+
+        tS = float(p["spend"].sum())
+        tL = int(p["leads"].sum())
+        imp = float(p["impressions"].sum())
+        lc = float(p["link_clicks"].sum())
+        cltS = float(clt["spend"].sum())
+        cltL = int(clt["leads"].sum())
+        cltImp = float(clt["impressions"].sum())
+        cltLc = float(clt["link_clicks"].sum())
+        fgtsS = float(fgts["spend"].sum())
+        fgtsL = int(fgts["leads"].sum())
+        fgtsImp = float(fgts["impressions"].sum())
+        fgtsLc = float(fgts["link_clicks"].sum())
+
+        kpis[str(n)] = {
+            "spend": round(tS, 2), "leads": tL,
+            "cpl": round(tS / tL, 2) if tL else None,
+            "ctr": round(lc / imp * 100, 2) if imp else None,
+            "cpm": round(tS / imp * 1000, 2) if imp else None,
+            "cltSpend": round(cltS, 2), "cltLeads": cltL,
+            "cltCpl": round(cltS / cltL, 2) if cltL else None,
+            "cltCtr": round(cltLc / cltImp * 100, 2) if cltImp else None,
+            "fgtsSpend": round(fgtsS, 2), "fgtsLeads": fgtsL,
+            "fgtsCpl": round(fgtsS / fgtsL, 2) if fgtsL else None,
+            "fgtsCtr": round(fgtsLc / fgtsImp * 100, 2) if fgtsImp else None,
+        }
+        print(f"   {n}d: R${tS:,.0f} | {tL:,} leads | CTR {lc/imp*100:.2f}% | CPM R${tS/imp*1000:.2f}" if imp else f"   {n}d: sem dados")
+
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+        try:
+            ym = pd.Period(ym_str, "M")
+            p = df[df["ym"] == ym]
+            if len(p) == 0:
+                continue
+            clt = p[p["product"] == "CLT"]
+            fgts = p[p["product"] == "FGTS"]
+            tS = float(p["spend"].sum())
+            tL = int(p["leads"].sum())
+            imp = float(p["impressions"].sum())
+            lc = float(p["link_clicks"].sum())
+            cltS = float(clt["spend"].sum())
+            cltL = int(clt["leads"].sum())
+            cltImp = float(clt["impressions"].sum())
+            cltLc = float(clt["link_clicks"].sum())
+            fgtsS = float(fgts["spend"].sum())
+            fgtsL = int(fgts["leads"].sum())
+            fgtsImp = float(fgts["impressions"].sum())
+            fgtsLc = float(fgts["link_clicks"].sum())
+            kpis[ym_str] = {
+                "spend": round(tS, 2), "leads": tL,
+                "cpl": round(tS / tL, 2) if tL else None,
+                "ctr": round(lc / imp * 100, 2) if imp else None,
+                "cpm": round(tS / imp * 1000, 2) if imp else None,
+                "cltSpend": round(cltS, 2), "cltLeads": cltL,
+                "cltCpl": round(cltS / cltL, 2) if cltL else None,
+                "cltCtr": round(cltLc / cltImp * 100, 2) if cltImp else None,
+                "fgtsSpend": round(fgtsS, 2), "fgtsLeads": fgtsL,
+                "fgtsCpl": round(fgtsS / fgtsL, 2) if fgtsL else None,
+                "fgtsCtr": round(fgtsLc / fgtsImp * 100, 2) if fgtsImp else None,
+            }
+        except Exception as e:
+            print(f"   {ym_str}: erro {e}")
+
+    return kpis
+
+
+# ── CAMPANHAS POR PERÍODO ─────────────────────────────
+def build_camps_period(df, start_dt, end_dt, all_months):
+    p = df[(df["date"] >= pd.Timestamp(start_dt)) & (df["date"] <= pd.Timestamp(end_dt))]
+    if len(p) == 0:
+        return []
+
+    camps = p.groupby(["campaign", "product"]).agg(
+        spend=("spend", "sum"), leads=("leads", "sum"),
+        impressions=("impressions", "sum"), link_clicks=("link_clicks", "sum"),
+    ).reset_index()
+    camps["cpl"] = (camps["spend"] / camps["leads"]).where(camps["leads"] > 0).round(2)
+    camps["cpm"] = (camps["spend"] / camps["impressions"] * 1000).where(camps["impressions"] > 0).round(2)
+    camps["ctr"] = (camps["link_clicks"] / camps["impressions"] * 100).where(camps["impressions"] > 0).round(2)
+    camps = camps.sort_values("leads", ascending=False).head(12)
+
+    cur_ym = pd.Period(end_dt, "M")
+    cur_idx = list(all_months).index(cur_ym) if cur_ym in all_months else len(all_months) - 1
+    spk_months = all_months[max(0, cur_idx - 5):cur_idx + 1]
+
+    out = []
+    for _, r in camps.iterrows():
+        adsets = p[p["campaign"] == r["campaign"]].groupby("adset").agg(
+            spend=("spend", "sum"), leads=("leads", "sum"),
+            impressions=("impressions", "sum"), link_clicks=("link_clicks", "sum"),
+        ).reset_index()
+        adsets["cpl"] = (adsets["spend"] / adsets["leads"]).where(adsets["leads"] > 0).round(2)
+        adsets["cpm"] = (adsets["spend"] / adsets["impressions"] * 1000).where(adsets["impressions"] > 0).round(2)
+        adsets["ctr"] = (adsets["link_clicks"] / adsets["impressions"] * 100).where(adsets["impressions"] > 0).round(2)
+        adsets = adsets.sort_values("leads", ascending=False)
+
+        spk = []
+        for sm in spk_months:
+            cm = df[(df["ym"] == sm) & (df["campaign"] == r["campaign"])]
+            ts2 = float(cm["spend"].sum())
+            tl2 = float(cm["leads"].sum())
+            spk.append(round(ts2 / tl2, 2) if tl2 > 0 else None)
+
+        conjs = []
+        for _, a in adsets.iterrows():
+            conjs.append({
+                "n": str(a["adset"]),
+                "spend": round(float(a["spend"]), 2),
+                "leads": int(a["leads"]),
+                "cpl": float(a["cpl"]) if pd.notna(a["cpl"]) else None,
+                "cpm": float(a["cpm"]) if pd.notna(a["cpm"]) else None,
+                "ctr": float(a["ctr"]) if pd.notna(a["ctr"]) else None,
+            })
+
+        out.append({
+            "n": str(r["campaign"]),
+            "product": str(r["product"]),
+            "spend": round(float(r["spend"]), 2),
+            "leads": int(r["leads"]),
+            "cpl": float(r["cpl"]) if pd.notna(r["cpl"]) else None,
+            "cpm": float(r["cpm"]) if pd.notna(r["cpm"]) else None,
+            "ctr": float(r["ctr"]) if pd.notna(r["ctr"]) else None,
+            "spk": spk,
+            "conjs": conjs,
+        })
+    return out
+
+
+def build_camps(df, all_days):
+    all_months = sorted(df["ym"].unique())
+    last = pd.Timestamp(all_days[-1])
+    result = {}
+
+    for n in [1, 7, 14, 30]:
+        start = last - pd.Timedelta(days=n - 1)
+        result[str(n)] = build_camps_period(df, start, last, all_months)
+        print(f"   {n}d: {len(result[str(n)])} campanhas")
+
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+        try:
+            ym = pd.Period(ym_str, "M")
+            if ym not in all_months:
+                continue
+            start = ym.start_time
+            end = min(ym.end_time, last)
+            result[ym_str] = build_camps_period(df, start, end, all_months)
+            print(f"   {ym_str}: {len(result[ym_str])} campanhas")
+        except Exception as e:
+            print(f"   {ym_str}: erro {e}")
+
+    return result
+
+
+# ── DADOS MENSAIS ─────────────────────────────────────
+def build_monthly(df):
+    months = sorted(df["ym"].unique())
+    data = {k: [] for k in ["meses", "lbl", "cltS", "fgtsS", "cplG", "cltCPL", "fgtsCPL", "cltL", "fgtsL"]}
+
+    for m in months:
+        p = df[df["ym"] == m]
+        clt = p[p["product"] == "CLT"]
+        fgts = p[p["product"] == "FGTS"]
+        cs = round(float(clt["spend"].sum()), 2)
+        fs = round(float(fgts["spend"].sum()), 2)
+        cl = int(clt["leads"].sum())
+        fl = int(fgts["leads"].sum())
+        ts = cs + fs
+        tl = cl + fl
+
+        data["meses"].append(str(m))
+        data["lbl"].append(pd.Period(m, "M").strftime("%b/%y").capitalize())
+        data["cltS"].append(cs)
+        data["fgtsS"].append(fs)
+        data["cplG"].append(round(ts / tl, 2) if tl > 0 else None)
+        data["cltCPL"].append(round(cs / cl, 2) if cl > 0 else None)
+        data["fgtsCPL"].append(round(fs / fl, 2) if fl > 0 else None)
+        data["cltL"].append(cl)
+        data["fgtsL"].append(fl)
+
+    return data
+
+
+# ── DIAS POR MÊS ─────────────────────────────────────
+def build_mes_days(df):
+    result = {}
+    for ym in df["ym"].unique():
+        days = sorted(df[df["ym"] == ym]["date"].unique())
+        result[str(ym)] = [pd.Timestamp(d).strftime("%d/%m") for d in days]
+    return result
+
+
+# ── CRIATIVOS COM IMAGENS ─────────────────────────────
+def build_ads_period(df, img_dir, start_dt, end_dt):
+    """Gera criativos para um período específico."""
+    p = df[(df["date"] >= pd.Timestamp(start_dt)) & (df["date"] <= pd.Timestamp(end_dt))]
+    df_ads = p[
+        p["thumb"].notna() &
+        (p["thumb"].astype(str) != "") &
+        (p["thumb"].astype(str) != "nan")
+    ].copy()
+
+    if df_ads.empty:
+        return {"CLT": [], "FGTS": []}
+
+    ads_agg = df_ads.groupby(["ad", "product", "thumb"]).agg(
+        leads=("leads", "sum"), spend=("spend", "sum")
+    ).reset_index().sort_values("leads", ascending=False)
+
+    result = {"CLT": [], "FGTS": []}
+    for prod, n_top in [("CLT", 8), ("FGTS", 6)]:
+        subset = ads_agg[ads_agg["product"] == prod].drop_duplicates(subset="ad").head(n_top)
+        for _, r in subset.iterrows():
+            local = download_thumb(str(r["thumb"]), img_dir)
+            tL = int(r["leads"])
+            tS = float(r["spend"])
+            result[prod].append({
+                "n": str(r["ad"]),
+                "leads": tL,
+                "cpl": round(tS / tL, 2) if tL > 0 else None,
+                "thumb": local,
+            })
+    return result
+
+
+def build_ads(df, img_dir, all_days):
+    """Gera criativos para todos os períodos."""
+    last = pd.Timestamp(all_days[-1])
+    all_months = sorted(df["ym"].unique())
+    result = {}
+
+    for n in [1, 7, 14, 30]:
+        start = last - pd.Timedelta(days=n - 1)
+        result[str(n)] = build_ads_period(df, img_dir, start, last)
+        print(f"   {n}d: CLT {len(result[str(n)]['CLT'])} | FGTS {len(result[str(n)]['FGTS'])}")
+
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+        try:
+            ym = pd.Period(ym_str, "M")
+            if ym not in all_months:
+                continue
+            start = ym.start_time
+            end = min(ym.end_time, last)
+            result[ym_str] = build_ads_period(df, img_dir, start, end)
+        except Exception as e:
+            print(f"   {ym_str}: erro {e}")
+
+    return result
+
+
+
+# ── LER BREAKDOWNS ────────────────────────────────────
+def load_breakdown(url, dim_col, dim_name):
+    """Lê uma aba de breakdown e retorna DataFrame limpo."""
+    try:
+        df = pd.read_csv(url)
+        col_map = {
+            "Date": "date",
+            "Spend (Cost, Amount Spent)": "spend",
+            "Action Messaging Conversations Started (Onsite Conversion)": "leads",
+            "Impressions": "impressions",
+            dim_col: dim_name,
+        }
+        df = df.rename(columns={k: v for k, v in col_map.items() if k in df.columns})
+        df["date"] = pd.to_datetime(df["date"], errors="coerce")
+        for c in ["spend", "leads", "impressions"]:
+            if c in df.columns:
+                df[c] = pd.to_numeric(
+                    df[c].astype(str).str.replace(",", ".", regex=False),
+                    errors="coerce"
+                ).fillna(0)
+        df = df.dropna(subset=["date"])
+        return df
+    except Exception as e:
+        print(f"   Erro ao ler {url}: {e}")
+        return pd.DataFrame()
+
+
+def build_breakdown_period(df, dim_col, start_dt, end_dt, top_n=15):
+    """Agrega dados de breakdown para um período."""
+    if df.empty:
+        return []
+    p = df[(df["date"] >= pd.Timestamp(start_dt)) & (df["date"] <= pd.Timestamp(end_dt))]
+    if len(p) == 0:
+        return []
+    
+    agg = p.groupby(dim_col).agg(
+        spend=("spend", "sum"),
+        leads=("leads", "sum"),
+        impressions=("impressions", "sum"),
+    ).reset_index()
+    agg["cpl"] = (agg["spend"] / agg["leads"]).where(agg["leads"] > 0).round(2)
+    agg["cpm"] = (agg["spend"] / agg["impressions"] * 1000).where(agg["impressions"] > 0).round(2)
+    agg = agg[agg["spend"] > 0].sort_values("leads", ascending=False).head(top_n)
+    
+    out = []
+    for _, r in agg.iterrows():
+        out.append({
+            "n": str(r[dim_col]),
+            "spend": round(float(r["spend"]), 2),
+            "leads": int(r["leads"]),
+            "impressions": int(r["impressions"]),
+            "cpl": float(r["cpl"]) if pd.notna(r["cpl"]) else None,
+            "cpm": float(r["cpm"]) if pd.notna(r["cpm"]) else None,
+        })
+    return out
+
+
+def build_gender_period(df_ga, start_dt, end_dt):
+    """Separa gênero e idade."""
+    if df_ga.empty:
+        return {"age": [], "gender": []}
+    p = df_ga[(df_ga["date"] >= pd.Timestamp(start_dt)) & (df_ga["date"] <= pd.Timestamp(end_dt))]
+    
+    age_order = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+    
+    age_agg = p.groupby("age").agg(spend=("spend","sum"), leads=("leads","sum"), impressions=("impressions","sum")).reset_index()
+    age_agg["cpl"] = (age_agg["spend"]/age_agg["leads"]).where(age_agg["leads"]>0).round(2)
+    age_agg["cpm"] = (age_agg["spend"]/age_agg["impressions"]*1000).where(age_agg["impressions"]>0).round(2)
+    age_agg = age_agg[age_agg["spend"] > 0]
+    age_agg["_order"] = age_agg["age"].apply(lambda x: age_order.index(x) if x in age_order else 99)
+    age_agg = age_agg.sort_values("_order")
+    
+    gen_agg = p.groupby("gender").agg(spend=("spend","sum"), leads=("leads","sum"), impressions=("impressions","sum")).reset_index()
+    gen_agg["cpl"] = (gen_agg["spend"]/gen_agg["leads"]).where(gen_agg["leads"]>0).round(2)
+    gen_agg["cpm"] = (gen_agg["spend"]/gen_agg["impressions"]*1000).where(gen_agg["impressions"]>0).round(2)
+    gen_agg = gen_agg[gen_agg["spend"] > 0].sort_values("leads", ascending=False)
+    
+    def to_list(df, dim):
+        out = []
+        for _, r in df.iterrows():
+            out.append({
+                "n": str(r[dim]),
+                "spend": round(float(r["spend"]), 2),
+                "leads": int(r["leads"]),
+                "impressions": int(r["impressions"]),
+                "cpl": float(r["cpl"]) if pd.notna(r["cpl"]) else None,
+                "cpm": float(r["cpm"]) if pd.notna(r["cpm"]) else None,
+            })
+        return out
+    
+    return {"age": to_list(age_agg, "age"), "gender": to_list(gen_agg, "gender")}
+
+
+def build_breakdowns(df_ga, df_pt, all_days):
+    """Gera todos os breakdowns para todos os períodos."""
+    last = pd.Timestamp(all_days[-1])
+    all_months_ga = sorted(df_ga["ym"].unique()) if not df_ga.empty and "ym" in df_ga.columns else []
+    result = {}
+
+    for n in [1, 7, 14, 30]:
+        start = last - pd.Timedelta(days=n - 1)
+        gd = build_gender_period(df_ga, start, last)
+        pt = build_breakdown_period(df_pt, "platform", start, last, top_n=15)
+        result[str(n)] = {"age": gd["age"], "gender": gd["gender"], "platform": pt}
+        print(f"   {n}d: idade={len(gd['age'])} genero={len(gd['gender'])} plataforma={len(pt)}")
+
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+        try:
+            ym = pd.Period(ym_str, "M")
+            start = ym.start_time
+            end = min(ym.end_time, last)
+            gd = build_gender_period(df_ga, start, end)
+            pt = build_breakdown_period(df_pt, "platform", start, end, top_n=15)
+            result[ym_str] = {"age": gd["age"], "gender": gd["gender"], "platform": pt}
+        except Exception as e:
+            print(f"   {ym_str}: erro {e}")
+
+    return result
+
+
+# ── INJETAR NO HTML ───────────────────────────────────
+def inject_data(template_path, daily, last_day, monthly, camps, mes_days, kpis, ads_data, breakdown_data):
+    html = Path(template_path).read_text(encoding="utf-8")
+
+    def replace_js_const(html, const_name, value):
+        pattern = rf"(const {const_name}\s*=\s*)({{[\s\S]*?}}|\"[^\"]*\"|\[[^\]]*\]);"
+        replacement = f"const {const_name} = {json.dumps(value, ensure_ascii=False)};"
+        new_html, count = re.subn(pattern, replacement, html, count=1)
+        if count == 0:
+            print(f"  AVISO: nao encontrou: {const_name}")
+        return new_html
+
+    html = replace_js_const(html, "DAILY", daily)
+    html = replace_js_const(html, "MONTHLY", monthly)
+    html = replace_js_const(html, "CAMPS_MES", camps)
+    html = replace_js_const(html, "MES_DAYS", mes_days)
+    html = replace_js_const(html, "KPIS_PERIODO", kpis)
+    html = replace_js_const(html, "ADS_DATA", ads_data)
+    html = replace_js_const(html, "BREAKDOWN_DATA", breakdown_data)
+
+    html = re.sub(r"Dados até \d{2}/\d{2}", f"Dados até {last_day}", html)
+    today_str = date.today().strftime("%d/%m/%Y")
+    html = re.sub(r"\d{2}/\d{2}/\d{4} · via planilha", f"{today_str} · via planilha", html)
+
+    return html
+
+
+# ── MAIN ──────────────────────────────────────────────
+def main():
+    print("=" * 50)
+    print("CREDI Dashboard — Gerador automatico")
+    print("=" * 50)
+
+    df = load_sheet()
+
+    print("Dados diarios...")
+    daily, last_day, all_days = build_daily(df)
+    print(f"   {len(daily['days'])} dias | ultimo: {last_day}")
+
+    print("KPIs por periodo...")
+    kpis = build_kpis(df, all_days)
+
+    print("Dados mensais...")
+    monthly = build_monthly(df)
+    print(f"   {len(monthly['meses'])} meses")
+
+    print("Campanhas por periodo...")
+    camps = build_camps(df, all_days)
+
+    print("Dias por mes...")
+    mes_days = build_mes_days(df)
+
+    print("Imagens dos criativos...")
+    img_dir = Path("imgs")
+    img_dir.mkdir(exist_ok=True)
+    ads_data = build_ads(df, img_dir, all_days)
+
+    print("Carregando breakdowns...")
+    df_ga_raw = pd.read_csv(SHEET_URL_GA)
+    df_ga_raw["date"] = pd.to_datetime(df_ga_raw["Date"], errors="coerce")
+    df_ga_raw["spend"] = pd.to_numeric(df_ga_raw["Spend (Cost, Amount Spent)"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["leads"] = pd.to_numeric(df_ga_raw["Action Messaging Conversations Started (Onsite Conversion)"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["impressions"] = pd.to_numeric(df_ga_raw["Impressions"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["age"] = df_ga_raw["Age (Breakdown)"]
+    df_ga_raw["gender"] = df_ga_raw["Gender (Breakdown)"]
+    df_ga_raw["ym"] = df_ga_raw["date"].dt.to_period("M")
+    df_ga = df_ga_raw.dropna(subset=["date"])
+
+    df_pt = load_breakdown(SHEET_URL_PT, "Platform Position (Breakdown)", "platform")
+
+    print("Gerando breakdowns por periodo...")
+    breakdown_data = build_breakdowns(df_ga, df_pt, all_days)
+
+    print("Gerando HTML...")
+    if not Path(TEMPLATE_FILE).exists():
+        print(f"Template nao encontrado: {TEMPLATE_FILE}")
+        return
+
+    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days, kpis, ads_data, breakdown_data)
+    Path(OUTPUT_FILE).write_text(html, encoding="utf-8")
+    print(f"Dashboard gerado: {OUTPUT_FILE} ({len(html)//1024}KB)")
+    print("=" * 50)
+
+
+if __name__ == "__main__":
+    main()
