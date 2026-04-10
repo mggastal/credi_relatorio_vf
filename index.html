@@ -233,22 +233,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
         <button class="pb" onclick="setPeriod(7,'7 dias',this)">7 dias</button>
         <button class="pb" onclick="setPeriod(14,'14 dias',this)">14 dias</button>
         <button class="pb active" onclick="setPeriod(30,'30 dias',this)">30 dias</button>
-        <select class="pb mes-select" onchange="setPeriodMes(this.value, this.options[this.selectedIndex].text, this)">
+        <select class="pb mes-select" id="mesSelect" onchange="setPeriodMes(this.value, this.options[this.selectedIndex].text, this)">
         <option value="">Meses</option>
-        <option value="2026-04">Abr/26</option>
-        <option value="2026-03">Mar/26</option>
-        <option value="2026-02">Fev/26</option>
-        <option value="2026-01">Jan/26</option>
       </select>
         
         
       </div>
       <div class="period-bar" id="pbGeral" style="display:none;">
         <button class="pb active" onclick="setGeralQ('all',this)">Tudo</button>
-        <button class="pb" onclick="setGeralQ('q1-26',this)">T1 2026</button>
-        <button class="pb" onclick="setGeralQ('q4-25',this)">T4 2025</button>
-        <button class="pb" onclick="setGeralQ('q3-25',this)">T3 2025</button>
-        <button class="pb" onclick="setGeralQ('q2-25',this)">T2 2025</button>
       </div>
       <label id="themeToggle" title="Alternar tema" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);font-size:12px;font-weight:600;color:var(--muted);transition:all .15s;white-space:nowrap;" onclick="toggleTheme()">
         <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
@@ -440,6 +432,76 @@ const ADS={
 
 // ═══ ESTADO ══════════════════════════════════════════
 let period=30,mesMode=null,campF='all',chartF='geral',geralQ='all',geralCampF='all',bdF='all',showLabels=false;
+
+function initDynamicControls(){
+  // Populate month select from MONTHLY data (reversed = newest first)
+  const sel=document.getElementById('mesSelect');
+  if(!sel)return;
+  // Keep first option "Meses"
+  while(sel.options.length>1) sel.remove(1);
+  const months=[...MONTHLY.meses].reverse();
+  const lbls=[...MONTHLY.lbl].reverse();
+  months.forEach((ym,i)=>{
+    const opt=document.createElement('option');
+    opt.value=ym;
+    opt.textContent=lbls[i];
+    sel.appendChild(opt);
+  });
+
+  // Build quarter buttons dynamically
+  const pb=document.getElementById('pbGeral');
+  if(!pb)return;
+  // Remove all except "Tudo"
+  while(pb.children.length>1) pb.removeChild(pb.lastChild);
+
+  // Detect available quarters from MONTHLY.meses
+  const quarters=[];
+  const seen=new Set();
+  MONTHLY.meses.forEach((ym,idx)=>{
+    const [y,m]=ym.split('-').map(Number);
+    const q=Math.ceil(m/3);
+    const key=`q${q}-${String(y).slice(2)}`;
+    if(!seen.has(key)){
+      seen.add(key);
+      const label=`T${q} ${y}`;
+      quarters.push({key,label,idx});
+    }
+  });
+
+  // Show last 6 quarters, newest first
+  quarters.reverse().slice(0,6).forEach(({key,label})=>{
+    const btn=document.createElement('button');
+    btn.className='pb';
+    btn.textContent=label;
+    btn.onclick=function(){setGeralQDyn(key,this);};
+    pb.appendChild(btn);
+  });
+}
+
+// Dynamic quarter ranges based on MONTHLY data
+function getQuarterRange(key){
+  if(key==='all') return null;
+  // key format: q1-26, q2-25, etc.
+  const m=key.match(/^q(\d)-(\d{2})$/);
+  if(!m) return null;
+  const qNum=parseInt(m[1]);
+  const year=2000+parseInt(m[2]);
+  const startMonth=(qNum-1)*3+1;
+  const endMonth=qNum*3;
+  const startYm=`${year}-${String(startMonth).padStart(2,'0')}`;
+  const endYm=`${year}-${String(endMonth).padStart(2,'0')}`;
+  const s=MONTHLY.meses.indexOf(startYm);
+  const e=MONTHLY.meses.lastIndexOf(endYm);
+  if(s===-1&&e===-1) return null;
+  return [Math.max(0,s), e===-1?MONTHLY.meses.length-1:e];
+}
+
+function setGeralQDyn(key,btn){
+  geralQ=key;
+  document.querySelectorAll('#pbGeral .pb').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGeral();
+}
 const CH={};
 Chart.register(ChartDataLabels);
 const G='#059669',O='#ea580c',GR='#6b7280',BL='#2563eb';
@@ -886,7 +948,7 @@ const QR2={
 };
 
 function renderGeral(){
-  const range=QR2[geralQ];
+  const range=geralQ==='all'?null:getQuarterRange(geralQ);
   const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
   const lbl=MONTHLY.lbl.slice(s,e);
   const cltS2=MONTHLY.cltS.slice(s,e),fgtsS2=MONTHLY.fgtsS.slice(s,e);
@@ -895,7 +957,9 @@ function renderGeral(){
 
   const tS=sm(cltS2)+sm(fgtsS2),tL=sm(cltL2)+sm(fgtsL2);
   const cltSpT=sm(cltS2),fgtsSpT=sm(fgtsS2),cltLT=sm(cltL2),fgtsLT=sm(fgtsL2);
-  const qlbl={'all':'Todos os meses','q1-26':'T1 2026 (Jan–Mar)','q4-25':'T4 2025 (Out–Dez)','q3-25':'T3 2025 (Jul–Set)','q2-25':'T2 2025 (Abr–Jun)'}[geralQ]||'';
+  const qNames={'1':'Jan–Mar','2':'Abr–Jun','3':'Jul–Set','4':'Out–Dez'};
+  const qm=geralQ.match(/^q(\d)-(\d{2})$/);
+  const qlbl=geralQ==='all'?'Todos os meses':qm?`T${qm[1]} 20${qm[2]} (${qNames[qm[1]]||''})`:geralQ;
   document.getElementById('geralSub').textContent=qlbl;
   document.getElementById('rankLbl').textContent='— '+qlbl;
   document.getElementById('geralCampLbl').textContent='— '+qlbl;
@@ -951,7 +1015,7 @@ function renderGeral(){
 }
 
 function buildGeralCampTable(){
-  const range=QR2[geralQ];
+  const range=geralQ==='all'?null:getQuarterRange(geralQ);
   const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
   const meses=MONTHLY.meses.slice(s,e);
   const map={};
@@ -979,7 +1043,7 @@ function buildGeralCampTable(){
 
 function buildGeralPubTable(){
   // Aggregate adsets across available months
-  const range=QR2[geralQ];
+  const range=geralQ==='all'?null:getQuarterRange(geralQ);
   const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
   const meses=MONTHLY.meses.slice(s,e);
   const map={};
@@ -1081,6 +1145,7 @@ function buildBreakdowns(){
 }
 
 
+initDynamicControls();
 render();
 buildAds();
 buildBreakdowns();
