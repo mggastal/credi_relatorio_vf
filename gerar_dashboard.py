@@ -487,7 +487,7 @@ def build_breakdowns(df_ga, df_pt, all_days):
         gd = build_gender_period(df_ga, start, last)
         pt = build_breakdown_period(df_pt, "platform", start, last, top_n=15)
         result[str(n)] = {"age": gd["age"], "gender": gd["gender"], "platform": pt}
-        print(f"   {n}d: idade={len(gd['age'])} gênero={len(gd['gender'])} região={len(rg)} plataforma={len(pt)}")
+        print(f"   {n}d: idade={len(gd['age'])} genero={len(gd['gender'])} plataforma={len(pt)}")
 
     for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
         try:
