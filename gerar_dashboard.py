@@ -354,12 +354,17 @@ def build_mes_days(df):
 
 
 # ── CRIATIVOS COM IMAGENS ─────────────────────────────
-def build_ads(df, img_dir, all_days):
-    df_ads = df[
-        df["thumb"].notna() &
-        (df["thumb"].astype(str) != "") &
-        (df["thumb"].astype(str) != "nan")
+def build_ads_period(df, img_dir, start_dt, end_dt):
+    """Gera criativos para um período específico."""
+    p = df[(df["date"] >= pd.Timestamp(start_dt)) & (df["date"] <= pd.Timestamp(end_dt))]
+    df_ads = p[
+        p["thumb"].notna() &
+        (p["thumb"].astype(str) != "") &
+        (p["thumb"].astype(str) != "nan")
     ].copy()
+
+    if df_ads.empty:
+        return {"CLT": [], "FGTS": []}
 
     ads_agg = df_ads.groupby(["ad", "product", "thumb"]).agg(
         leads=("leads", "sum"), spend=("spend", "sum")
@@ -378,7 +383,31 @@ def build_ads(df, img_dir, all_days):
                 "cpl": round(tS / tL, 2) if tL > 0 else None,
                 "thumb": local,
             })
-    print(f"   CLT: {len(result['CLT'])} criativos | FGTS: {len(result['FGTS'])} criativos")
+    return result
+
+
+def build_ads(df, img_dir, all_days):
+    """Gera criativos para todos os períodos."""
+    last = pd.Timestamp(all_days[-1])
+    all_months = sorted(df["ym"].unique())
+    result = {}
+
+    for n in [1, 7, 14, 30]:
+        start = last - pd.Timedelta(days=n - 1)
+        result[str(n)] = build_ads_period(df, img_dir, start, last)
+        print(f"   {n}d: CLT {len(result[str(n)]['CLT'])} | FGTS {len(result[str(n)]['FGTS'])}")
+
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+        try:
+            ym = pd.Period(ym_str, "M")
+            if ym not in all_months:
+                continue
+            start = ym.start_time
+            end = min(ym.end_time, last)
+            result[ym_str] = build_ads_period(df, img_dir, start, end)
+        except Exception as e:
+            print(f"   {ym_str}: erro {e}")
+
     return result
 
 

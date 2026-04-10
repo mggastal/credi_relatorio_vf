@@ -280,10 +280,8 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
       <!-- BREAKDOWNS -->
       <div class="section" id="breakdownSection">
         <div class="sec-hd">Análise por Segmento <span id="breakdownLbl">— período selecionado</span></div>
-        <div class="stabs" style="margin-bottom:14px;">
-          <button class="stab all active" onclick="setBdF('all',this)">Todas</button>
-          <button class="stab clt" onclick="setBdF('CLT',this)">CLT</button>
-          <button class="stab fgts" onclick="setBdF('FGTS',this)">FGTS</button>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:#fefce8;border:1px solid #fde047;color:#854d0e;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;margin-bottom:14px;">
+          <span>⚠️</span> Dados a nível de conta
         </div>
         <div style="display:grid;gap:16px;">
           <!-- Idade -->
@@ -812,7 +810,8 @@ function toggleC(id){
 // ═══ ADS GRID ═══════════════════════════════════════
 function buildAds(){
   const aKey=mesMode||String(period);
-  const periodAds=ADS_DATA[aKey]||ADS_DATA['30']||{};
+  // ADS_DATA is keyed by period: {"1":{CLT:[],FGTS:[]},"7":{...},...}
+  const periodAds=(ADS_DATA[aKey]&&ADS_DATA[aKey]['CLT'])?ADS_DATA[aKey]:(ADS_DATA['30']||ADS_DATA||{});
   // Build combined "Todas" list sorted by leads
   const allAds=[...(periodAds['CLT']||[]).map(a=>({...a,prod:'CLT'})),...(periodAds['FGTS']||[]).map(a=>({...a,prod:'FGTS'}))].sort((a,b)=>b.leads-a.leads);
   
