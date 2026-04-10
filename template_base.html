@@ -474,6 +474,8 @@ function initDynamicControls(){
   const months=[...MONTHLY.meses].reverse();
   const lbls=[...MONTHLY.lbl].reverse();
   months.forEach((ym,i)=>{
+    // Only show months that have campaign data
+    if(!CAMPS_MES[ym]||CAMPS_MES[ym].length===0) return;
     const opt=document.createElement('option');
     opt.value=ym;
     opt.textContent=lbls[i];
