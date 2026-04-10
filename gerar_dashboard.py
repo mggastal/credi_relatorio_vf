@@ -354,7 +354,7 @@ def build_mes_days(df):
 
 
 # ── CRIATIVOS COM IMAGENS ─────────────────────────────
-def build_ads(df, img_dir):
+def build_ads(df, img_dir, all_days):
     df_ads = df[
         df["thumb"].notna() &
         (df["thumb"].astype(str) != "") &
