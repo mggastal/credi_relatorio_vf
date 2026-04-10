@@ -6,6 +6,7 @@
 <title>CREDI — Dashboard Meta Ads</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 :root{--bg:#f0f2f7;--surface:#fff;--surface2:#f7f8fc;--border:rgba(0,0,0,0.07);--text:#0f1523;--muted:#6b7280;--muted2:#9ca3af;--green:#059669;--gbg:#ecfdf5;--gborder:#a7f3d0;--orange:#ea580c;--obg:#fff7ed;--oborder:#fdba74;--red:#dc2626;--warn:#d97706;--sh:0 1px 4px rgba(0,0,0,.06);--sh2:0 2px 12px rgba(0,0,0,.08);--r:14px;}
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -230,10 +231,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
     <div class="page-section active" id="page-dash">
       <div class="kpi-strip" id="kpiStrip"></div>
       <div class="prod-row" id="prodRow"></div>
-      <div class="chart-filter">
-        <button class="cf-btn active" onclick="setCF('geral',this)">Geral</button>
-        <button class="cf-btn" onclick="setCF('clt',this)">CLT</button>
-        <button class="cf-btn" onclick="setCF('fgts',this)">FGTS</button>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div class="chart-filter" style="margin-bottom:0;">
+          <button class="cf-btn active" onclick="setCF('geral',this)">Geral</button>
+          <button class="cf-btn" onclick="setCF('clt',this)">CLT</button>
+          <button class="cf-btn" onclick="setCF('fgts',this)">FGTS</button>
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12px;color:var(--muted);font-weight:600;user-select:none;">
+          <input type="checkbox" id="chkLabels" onchange="toggleLabels(this.checked)" style="width:14px;height:14px;cursor:pointer;accent-color:#0f1523;">
+          Rótulos
+        </label>
       </div>
       <div class="chart-main">
         <div class="chart-card">
@@ -434,8 +441,9 @@ const ADS={
 };
 
 // ═══ ESTADO ══════════════════════════════════════════
-let period=30,mesMode=null,campF='all',chartF='geral',geralQ='all',geralCampF='all',bdF='all';
+let period=30,mesMode=null,campF='all',chartF='geral',geralQ='all',geralCampF='all',bdF='all',showLabels=false;
 const CH={};
+Chart.register(ChartDataLabels);
 const G='#059669',O='#ea580c',GR='#6b7280',BL='#2563eb';
 const GRID='rgba(0,0,0,0.05)',TXT='#9ca3af';
 const bf={family:"'DM Sans',sans-serif",size:10};
@@ -479,6 +487,10 @@ function setCF(f,btn){
   chartF=f;
   document.querySelectorAll('.cf-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  render();
+}
+function toggleLabels(checked){
+  showLabels=checked;
   render();
 }
 function setCampF(f,btn){
@@ -588,10 +600,20 @@ function render(){
   if(f==='geral'){leadsDS=[{label:'CLT',data:cltL,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2,type:'bar'},{label:'FGTS',data:fgtsL,backgroundColor:'rgba(234,88,12,.75)',stack:'s',borderRadius:2,type:'bar'}];spArr=spend;cplArr=cpl;}
   else if(f==='clt'){leadsDS=[{label:'Leads CLT',data:cltL,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2,type:'bar'}];spArr=cltS;cplArr=cltCPL;}
   else{leadsDS=[{label:'Leads FGTS',data:fgtsL,backgroundColor:'rgba(234,88,12,.75)',stack:'s',borderRadius:2,type:'bar'}];spArr=fgtsS;cplArr=fgtsCPL;}
-  CH['chMain']=new Chart(document.getElementById('chMain'),{data:{labels:days,datasets:[...leadsDS,
-    {label:'Invest.',data:spArr,borderColor:'#00c49a',backgroundColor:'transparent',tension:.3,pointRadius:2,borderWidth:2,type:'line',yAxisID:'y1',spanGaps:false},
-    {label:'CPL',data:cplArr,borderColor:'#333',borderDash:[5,3],backgroundColor:'transparent',pointRadius:2,borderWidth:1.5,tension:.3,spanGaps:false,type:'line',yAxisID:'y2'},
-  ]},options:{...bo(),scales:{
+  // Leads: sem rótulo
+  leadsDS=leadsDS.map(d=>({...d,datalabels:{display:false}}));
+  
+  // Investimento: rótulo acima, sem casas decimais, preto
+  const spDs={label:'Invest.',data:spArr,borderColor:'#00c49a',backgroundColor:'transparent',tension:.3,pointRadius:2,borderWidth:2,type:'line',yAxisID:'y1',spanGaps:false,
+    datalabels:{display:showLabels,color:'#111',font:{size:9,weight:'bold'},anchor:'end',align:'top',offset:2,
+      formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null}};
+  
+  // CPL: rótulo abaixo da linha, preto escuro, 1 casa decimal
+  const cplDs={label:'CPL',data:cplArr,borderColor:'#333',borderDash:[5,3],backgroundColor:'transparent',pointRadius:2,borderWidth:1.5,tension:.3,spanGaps:false,type:'line',yAxisID:'y2',
+    datalabels:{display:showLabels,color:'#111',font:{size:9,weight:'bold'},anchor:'end',align:'bottom',offset:2,
+      formatter:v=>v!=null&&v>0?'R$'+v.toFixed(1):null}};
+
+  CH['chMain']=new Chart(document.getElementById('chMain'),{data:{labels:days,datasets:[...leadsDS,spDs,cplDs]},options:{...bo(),scales:{
     x:{ticks:{color:TXT,font:bf,maxTicksLimit:12},grid:{color:GRID}},
     y:{ticks:{color:TXT,font:bf},grid:{color:GRID},stacked:f==='geral'},
     y1:{position:'right',ticks:{color:'#00a07a',font:bf,callback:v=>'R$'+v.toLocaleString()},grid:{display:false}},
@@ -603,10 +625,12 @@ function render(){
   if(f==='geral') ctrDS=[{label:'CTR',data:ctr,borderColor:BL,backgroundColor:'rgba(37,99,235,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2},{label:'Meta 2,5%',data:days.map(()=>2.5),borderColor:'rgba(0,0,0,.1)',borderDash:[4,4],pointRadius:0,borderWidth:1,spanGaps:true}];
   else if(f==='clt') ctrDS=[{label:'CTR CLT',data:cltCTR,borderColor:G,backgroundColor:'rgba(5,150,105,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2,spanGaps:false},{label:'Meta 2,5%',data:days.map(()=>2.5),borderColor:'rgba(0,0,0,.1)',borderDash:[4,4],pointRadius:0,borderWidth:1,spanGaps:true}];
   else ctrDS=[{label:'CTR FGTS',data:fgtsCTR,borderColor:O,backgroundColor:'rgba(234,88,12,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2,spanGaps:false},{label:'Meta 2,5%',data:days.map(()=>2.5),borderColor:'rgba(0,0,0,.1)',borderDash:[4,4],pointRadius:0,borderWidth:1,spanGaps:true}];
-  CH['chCTR']=new Chart(document.getElementById('chCTR'),{type:'line',data:{labels:days,datasets:ctrDS},options:{...bo(),scales:{x:{ticks:{color:TXT,font:bf,maxTicksLimit:8},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf,callback:v=>v+'%'},grid:{color:GRID},min:0}}}});
+  const ctrDlDs=ctrDS.map((d,i)=>({...d,datalabels:{display:showLabels&&i===0,color:'#2563eb',font:{size:9,weight:'bold'},formatter:v=>v!=null?v.toFixed(1)+'%':null,anchor:'top',align:'top',offset:2}}));
+  CH['chCTR']=new Chart(document.getElementById('chCTR'),{type:'line',data:{labels:days,datasets:ctrDlDs},options:{...bo(),scales:{x:{ticks:{color:TXT,font:bf,maxTicksLimit:8},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf,callback:v=>v+'%'},grid:{color:GRID},min:0}}}});
 
   dc('chCPM');
-  CH['chCPM']=new Chart(document.getElementById('chCPM'),{type:'line',data:{labels:days,datasets:[{label:'CPM',data:cpm,borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2}]},options:{...bo(),scales:{x:{ticks:{color:TXT,font:bf,maxTicksLimit:8},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf,callback:v=>'R$'+v.toFixed(0)},grid:{color:GRID},min:0}}}});
+  const cpmDl={datalabels:{display:showLabels,color:'#7c3aed',font:{size:9,weight:'bold'},formatter:v=>v!=null?'R$'+v.toFixed(0):null,anchor:'top',align:'top',offset:2}};
+  CH['chCPM']=new Chart(document.getElementById('chCPM'),{type:'line',data:{labels:days,datasets:[{label:'CPM',data:cpm,...cpmDl,borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.08)',fill:true,tension:.3,pointRadius:2,borderWidth:2}]},options:{...bo(),scales:{x:{ticks:{color:TXT,font:bf,maxTicksLimit:8},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf,callback:v=>'R$'+v.toFixed(0)},grid:{color:GRID},min:0}}}});
 
   const ym=getCampKey();
   const mesLbls={'2026-04':'Abr/26','2026-03':'Mar/26','2026-02':'Fev/26','2026-01':'Jan/26','2025-12':'Dez/25','2025-11':'Nov/25','2025-10':'Out/25','2025-09':'Set/25'};
