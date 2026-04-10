@@ -19,6 +19,9 @@ OUTPUT_FILE = "index.html"
 TEMPLATE_FILE = "template_base.html"
 
 SHEET_URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={SHEET_TAB}"
+SHEET_URL_GA = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=breakdown-gender-age"
+SHEET_URL_RG = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=breakdown-regiao"
+SHEET_URL_PT = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet=breakdown-platform"
 
 
 # ── DOWNLOAD DE IMAGENS ───────────────────────────────
@@ -351,12 +354,11 @@ def build_mes_days(df):
 
 
 # ── CRIATIVOS COM IMAGENS ─────────────────────────────
-def build_ads_period(df, start_dt, end_dt, img_dir):
-    p = df[(df["date"] >= pd.Timestamp(start_dt)) & (df["date"] <= pd.Timestamp(end_dt))]
-    df_ads = p[
-        p["thumb"].notna() &
-        (p["thumb"].astype(str) != "") &
-        (p["thumb"].astype(str) != "nan")
+def build_ads(df, img_dir, all_days):
+    df_ads = df[
+        df["thumb"].notna() &
+        (df["thumb"].astype(str) != "") &
+        (df["thumb"].astype(str) != "nan")
     ].copy()
 
     ads_agg = df_ads.groupby(["ad", "product", "thumb"]).agg(
@@ -376,27 +378,125 @@ def build_ads_period(df, start_dt, end_dt, img_dir):
                 "cpl": round(tS / tL, 2) if tL > 0 else None,
                 "thumb": local,
             })
+    print(f"   CLT: {len(result['CLT'])} criativos | FGTS: {len(result['FGTS'])} criativos")
     return result
 
 
-def build_ads(df, img_dir, all_days):
+
+# ── LER BREAKDOWNS ────────────────────────────────────
+def load_breakdown(url, dim_col, dim_name):
+    """Lê uma aba de breakdown e retorna DataFrame limpo."""
+    try:
+        df = pd.read_csv(url)
+        col_map = {
+            "Date": "date",
+            "Spend (Cost, Amount Spent)": "spend",
+            "Action Messaging Conversations Started (Onsite Conversion)": "leads",
+            "Impressions": "impressions",
+            dim_col: dim_name,
+        }
+        df = df.rename(columns={k: v for k, v in col_map.items() if k in df.columns})
+        df["date"] = pd.to_datetime(df["date"], errors="coerce")
+        for c in ["spend", "leads", "impressions"]:
+            if c in df.columns:
+                df[c] = pd.to_numeric(
+                    df[c].astype(str).str.replace(",", ".", regex=False),
+                    errors="coerce"
+                ).fillna(0)
+        df = df.dropna(subset=["date"])
+        return df
+    except Exception as e:
+        print(f"   Erro ao ler {url}: {e}")
+        return pd.DataFrame()
+
+
+def build_breakdown_period(df, dim_col, start_dt, end_dt, top_n=15):
+    """Agrega dados de breakdown para um período."""
+    if df.empty:
+        return []
+    p = df[(df["date"] >= pd.Timestamp(start_dt)) & (df["date"] <= pd.Timestamp(end_dt))]
+    if len(p) == 0:
+        return []
+    
+    agg = p.groupby(dim_col).agg(
+        spend=("spend", "sum"),
+        leads=("leads", "sum"),
+        impressions=("impressions", "sum"),
+    ).reset_index()
+    agg["cpl"] = (agg["spend"] / agg["leads"]).where(agg["leads"] > 0).round(2)
+    agg["cpm"] = (agg["spend"] / agg["impressions"] * 1000).where(agg["impressions"] > 0).round(2)
+    agg = agg[agg["spend"] > 0].sort_values("leads", ascending=False).head(top_n)
+    
+    out = []
+    for _, r in agg.iterrows():
+        out.append({
+            "n": str(r[dim_col]),
+            "spend": round(float(r["spend"]), 2),
+            "leads": int(r["leads"]),
+            "impressions": int(r["impressions"]),
+            "cpl": float(r["cpl"]) if pd.notna(r["cpl"]) else None,
+            "cpm": float(r["cpm"]) if pd.notna(r["cpm"]) else None,
+        })
+    return out
+
+
+def build_gender_period(df_ga, start_dt, end_dt):
+    """Separa gênero e idade."""
+    if df_ga.empty:
+        return {"age": [], "gender": []}
+    p = df_ga[(df_ga["date"] >= pd.Timestamp(start_dt)) & (df_ga["date"] <= pd.Timestamp(end_dt))]
+    
+    age_order = ["18-24", "25-34", "35-44", "45-54", "55-64", "65+"]
+    
+    age_agg = p.groupby("age").agg(spend=("spend","sum"), leads=("leads","sum"), impressions=("impressions","sum")).reset_index()
+    age_agg["cpl"] = (age_agg["spend"]/age_agg["leads"]).where(age_agg["leads"]>0).round(2)
+    age_agg["cpm"] = (age_agg["spend"]/age_agg["impressions"]*1000).where(age_agg["impressions"]>0).round(2)
+    age_agg = age_agg[age_agg["spend"] > 0]
+    age_agg["_order"] = age_agg["age"].apply(lambda x: age_order.index(x) if x in age_order else 99)
+    age_agg = age_agg.sort_values("_order")
+    
+    gen_agg = p.groupby("gender").agg(spend=("spend","sum"), leads=("leads","sum"), impressions=("impressions","sum")).reset_index()
+    gen_agg["cpl"] = (gen_agg["spend"]/gen_agg["leads"]).where(gen_agg["leads"]>0).round(2)
+    gen_agg["cpm"] = (gen_agg["spend"]/gen_agg["impressions"]*1000).where(gen_agg["impressions"]>0).round(2)
+    gen_agg = gen_agg[gen_agg["spend"] > 0].sort_values("leads", ascending=False)
+    
+    def to_list(df, dim):
+        out = []
+        for _, r in df.iterrows():
+            out.append({
+                "n": str(r[dim]),
+                "spend": round(float(r["spend"]), 2),
+                "leads": int(r["leads"]),
+                "impressions": int(r["impressions"]),
+                "cpl": float(r["cpl"]) if pd.notna(r["cpl"]) else None,
+                "cpm": float(r["cpm"]) if pd.notna(r["cpm"]) else None,
+            })
+        return out
+    
+    return {"age": to_list(age_agg, "age"), "gender": to_list(gen_agg, "gender")}
+
+
+def build_breakdowns(df_ga, df_pt, all_days):
+    """Gera todos os breakdowns para todos os períodos."""
     last = pd.Timestamp(all_days[-1])
-    all_months = sorted(df["ym"].unique())
+    all_months_ga = sorted(df_ga["ym"].unique()) if not df_ga.empty and "ym" in df_ga.columns else []
     result = {}
 
     for n in [1, 7, 14, 30]:
         start = last - pd.Timedelta(days=n - 1)
-        result[str(n)] = build_ads_period(df, start, last, img_dir)
-        print(f"   {n}d: CLT {len(result[str(n)]['CLT'])} | FGTS {len(result[str(n)]['FGTS'])}")
+        gd = build_gender_period(df_ga, start, last)
+        pt = build_breakdown_period(df_pt, "platform", start, last, top_n=15)
+        result[str(n)] = {"age": gd["age"], "gender": gd["gender"], "platform": pt}
+        print(f"   {n}d: idade={len(gd['age'])} genero={len(gd['gender'])} plataforma={len(pt)}")
 
     for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
         try:
             ym = pd.Period(ym_str, "M")
-            if ym not in all_months:
-                continue
             start = ym.start_time
             end = min(ym.end_time, last)
-            result[ym_str] = build_ads_period(df, start, end, img_dir)
+            gd = build_gender_period(df_ga, start, end)
+            pt = build_breakdown_period(df_pt, "platform", start, end, top_n=15)
+            result[ym_str] = {"age": gd["age"], "gender": gd["gender"], "platform": pt}
         except Exception as e:
             print(f"   {ym_str}: erro {e}")
 
@@ -404,7 +504,7 @@ def build_ads(df, img_dir, all_days):
 
 
 # ── INJETAR NO HTML ───────────────────────────────────
-def inject_data(template_path, daily, last_day, monthly, camps, mes_days, kpis, ads_data):
+def inject_data(template_path, daily, last_day, monthly, camps, mes_days, kpis, ads_data, breakdown_data):
     html = Path(template_path).read_text(encoding="utf-8")
 
     def replace_js_const(html, const_name, value):
@@ -421,6 +521,7 @@ def inject_data(template_path, daily, last_day, monthly, camps, mes_days, kpis, 
     html = replace_js_const(html, "MES_DAYS", mes_days)
     html = replace_js_const(html, "KPIS_PERIODO", kpis)
     html = replace_js_const(html, "ADS_DATA", ads_data)
+    html = replace_js_const(html, "BREAKDOWN_DATA", breakdown_data)
 
     html = re.sub(r"Dados até \d{2}/\d{2}", f"Dados até {last_day}", html)
     today_str = date.today().strftime("%d/%m/%Y")
@@ -459,12 +560,28 @@ def main():
     img_dir.mkdir(exist_ok=True)
     ads_data = build_ads(df, img_dir, all_days)
 
+    print("Carregando breakdowns...")
+    df_ga_raw = pd.read_csv(SHEET_URL_GA)
+    df_ga_raw["date"] = pd.to_datetime(df_ga_raw["Date"], errors="coerce")
+    df_ga_raw["spend"] = pd.to_numeric(df_ga_raw["Spend (Cost, Amount Spent)"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["leads"] = pd.to_numeric(df_ga_raw["Action Messaging Conversations Started (Onsite Conversion)"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["impressions"] = pd.to_numeric(df_ga_raw["Impressions"].astype(str).str.replace(",", "."), errors="coerce").fillna(0)
+    df_ga_raw["age"] = df_ga_raw["Age (Breakdown)"]
+    df_ga_raw["gender"] = df_ga_raw["Gender (Breakdown)"]
+    df_ga_raw["ym"] = df_ga_raw["date"].dt.to_period("M")
+    df_ga = df_ga_raw.dropna(subset=["date"])
+
+    df_pt = load_breakdown(SHEET_URL_PT, "Platform Position (Breakdown)", "platform")
+
+    print("Gerando breakdowns por periodo...")
+    breakdown_data = build_breakdowns(df_ga, df_pt, all_days)
+
     print("Gerando HTML...")
     if not Path(TEMPLATE_FILE).exists():
         print(f"Template nao encontrado: {TEMPLATE_FILE}")
         return
 
-    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days, kpis, ads_data)
+    html = inject_data(TEMPLATE_FILE, daily, last_day, monthly, camps, mes_days, kpis, ads_data, breakdown_data)
     Path(OUTPUT_FILE).write_text(html, encoding="utf-8")
     print(f"Dashboard gerado: {OUTPUT_FILE} ({len(html)//1024}KB)")
     print("=" * 50)
