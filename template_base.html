@@ -268,11 +268,40 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
       <div class="section">
         <div class="sec-hd">Criativos <span id="adsLbl">— período selecionado</span></div>
         <div class="stabs">
-          <button class="stab clt active" onclick="switchS('ads','clt',this)">CLT</button>
+          <button class="stab all active" onclick="switchS('ads','all',this)">Todas</button>
+          <button class="stab clt" onclick="switchS('ads','clt',this)">CLT</button>
           <button class="stab fgts" onclick="switchS('ads','fgts',this)">FGTS</button>
         </div>
-        <div class="tpane active" id="ads-clt"><div class="ads-grid" id="agCLT"></div></div>
+        <div class="tpane active" id="ads-all"><div class="ads-grid" id="agALL"></div></div>
+        <div class="tpane" id="ads-clt"><div class="ads-grid" id="agCLT"></div></div>
         <div class="tpane" id="ads-fgts"><div class="ads-grid" id="agFGTS"></div></div>
+      </div>
+
+      <!-- BREAKDOWNS -->
+      <div class="section" id="breakdownSection">
+        <div class="sec-hd">Análise por Segmento <span id="breakdownLbl">— período selecionado</span></div>
+        <div class="stabs" style="margin-bottom:14px;">
+          <button class="stab all active" onclick="setBdF('all',this)">Todas</button>
+          <button class="stab clt" onclick="setBdF('CLT',this)">CLT</button>
+          <button class="stab fgts" onclick="setBdF('FGTS',this)">FGTS</button>
+        </div>
+        <div style="display:grid;gap:16px;">
+          <!-- Idade -->
+          <div class="chart-card">
+            <div class="cc-title">📊 Por Faixa Etária</div>
+            <div id="bdAge"></div>
+          </div>
+          <!-- Gênero -->
+          <div class="chart-card">
+            <div class="cc-title">👤 Por Gênero</div>
+            <div id="bdGender"></div>
+          </div>
+<!-- Plataforma -->
+          <div class="chart-card">
+            <div class="cc-title">📱 Por Posicionamento</div>
+            <div id="bdPlatform"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -336,6 +365,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 <script>
 // ═══ DADOS REAIS ══════════════════════════════════════
 const KPIS_PERIODO={};
+const BREAKDOWN_DATA={};
 const ADS_DATA={"CLT":[],"FGTS":[]};
 const DAILY={
   days:["20/01","21/01","22/01","23/01","24/01","26/01","27/01","28/01","29/01","30/01","02/02","03/02","04/02","05/02","06/02","09/02","10/02","11/02","12/02","13/02","16/02","19/02","20/02","23/02","24/02","25/02","26/02","27/02","02/03","03/03","04/03","05/03","06/03","09/03","10/03","11/03","12/03","13/03","14/03","15/03","16/03","17/03","18/03","19/03","20/03","21/03","22/03","23/03","24/03","25/03","26/03","27/03","28/03","29/03","30/03","31/03","01/04","02/04","03/04","04/04"],
@@ -406,7 +436,7 @@ const ADS={
 };
 
 // ═══ ESTADO ══════════════════════════════════════════
-let period=30,mesMode=null,campF='all',chartF='geral',geralQ='all',geralCampF='all';
+let period=30,mesMode=null,campF='all',chartF='geral',geralQ='all',geralCampF='all',bdF='all';
 const CH={};
 const G='#059669',O='#ea580c',GR='#6b7280',BL='#2563eb';
 const GRID='rgba(0,0,0,0.05)',TXT='#9ca3af';
@@ -587,6 +617,7 @@ function render(){
 
   buildCampTable();
   buildAds();
+  buildBreakdowns();
 }
 
 // ═══ CAMP TABLE + SPARKLINES ══════════════════════════
@@ -782,19 +813,24 @@ function toggleC(id){
 function buildAds(){
   const aKey=mesMode||String(period);
   const periodAds=ADS_DATA[aKey]||ADS_DATA['30']||{};
-  ['CLT','FGTS'].forEach(p=>{
-    const el=document.getElementById('ag'+p);
+  // Build combined "Todas" list sorted by leads
+  const allAds=[...(periodAds['CLT']||[]).map(a=>({...a,prod:'CLT'})),...(periodAds['FGTS']||[]).map(a=>({...a,prod:'FGTS'}))].sort((a,b)=>b.leads-a.leads);
+  
+  const targets=[['ALL',allAds],['CLT',periodAds['CLT']||[]],['FGTS',periodAds['FGTS']||[]]];
+  targets.forEach(([key,list])=>{
+    const el=document.getElementById('ag'+key);
+    if(!el)return;
     el.innerHTML='';
-    const adList=(periodAds[p]&&periodAds[p].length>0)?periodAds[p]:[];
-    if(adList.length===0){
+    if(list.length===0){
       el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px">Nenhum criativo disponível</div>';
       return;
     }
-    adList.forEach(ad=>{
+    list.forEach(ad=>{
       const cC=cc(ad.cpl);
+      const prodBadge=ad.prod?(ad.prod==='CLT'?`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(5,150,105,.15);color:${G};font-weight:700;margin-left:4px">CLT</span>`:`<span style="font-size:9px;padding:1px 5px;border-radius:4px;background:rgba(234,88,12,.15);color:${O};font-weight:700;margin-left:4px">FGTS</span>`):'';
       const d=document.createElement('div');d.className='ad-card';
       const img=ad.thumb?`<div class="ad-img-wrap"><img src="${ad.thumb}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'ad-img-placeholder\'>🖼️</div>'"></div>`:'<div class="ad-img-wrap"><div class="ad-img-placeholder">🖼️</div></div>';
-      d.innerHTML=`${img}<div class="ad-info"><div class="ad-name">${ad.n}</div><div class="ad-stats"><div><div class="as-l">Leads</div><div class="as-v">${fN(ad.leads)}</div></div><div><div class="as-l">CPL</div><div class="as-v" style="color:${cC}">${fR(ad.cpl)}</div></div></div></div>`;
+      d.innerHTML=`${img}<div class="ad-info"><div class="ad-name">${ad.n}${key==='ALL'?prodBadge:''}</div><div class="ad-stats"><div><div class="as-l">Leads</div><div class="as-v">${fN(ad.leads)}</div></div><div><div class="as-l">CPL</div><div class="as-v" style="color:${cC}">${fR(ad.cpl)}</div></div></div></div>`;
       el.appendChild(d);
     });
   });
@@ -931,8 +967,86 @@ function buildGeralPubTable(){
     </tr>`).join('')}</tbody></table>`;
 }
 
+
+// ═══ BREAKDOWNS ══════════════════════════════════════
+function setBdF(f,btn){
+  bdF=f;
+  btn.closest('.stabs').querySelectorAll('.stab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildBreakdowns();
+}
+
+function buildBreakdownTable(containerId, data, hasLeads){
+  const el=document.getElementById(containerId);
+  if(!el)return;
+  if(!data||data.length===0){
+    el.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">Sem dados para este período</div>';
+    return;
+  }
+  
+  if(window.innerWidth<=768){
+    // Mobile: cards
+    let cards='';
+    data.forEach(r=>{
+      const hasL=r.leads>0;
+      cards+=`<div style="background:var(--surface2);border-radius:8px;padding:10px;margin-bottom:6px;">
+        <div style="font-weight:700;font-size:12px;margin-bottom:6px">${r.n}</div>
+        <div style="display:grid;grid-template-columns:repeat(${hasL?4:3},1fr);gap:6px;text-align:center;">
+          <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Invest.</div><div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace">${fR(r.spend)}</div></div>
+          ${hasL?`<div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Leads</div><div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace">${fN(r.leads)}</div></div>`:''}
+          ${hasL?`<div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">CPL</div><div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace;color:${cc(r.cpl)}">${fR(r.cpl)}</div></div>`:''}
+          <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">CPM</div><div style="font-size:12px;font-weight:700;font-family:'DM Mono',monospace">${fR(r.cpm)}</div></div>
+        </div>
+      </div>`;
+    });
+    el.innerHTML=cards;
+    return;
+  }
+
+  // Desktop: table
+  const hasL=data.some(r=>r.leads>0);
+  const mx=Math.max(...data.map(r=>r.leads||r.spend),1);
+  let rows='';
+  data.forEach((r,i)=>{
+    const barW=Math.round((hasL?(r.leads||0):r.spend)/mx*100);
+    rows+=`<tr>
+      <td style="color:#9ca3af;font-size:10px;width:24px">${i+1}</td>
+      <td style="font-weight:600;font-size:12px">${r.n}</td>
+      <td style="width:80px;padding:0 12px">
+        <div style="background:var(--bg);border-radius:3px;height:4px;overflow:hidden">
+          <div style="width:${barW}%;height:100%;background:${G};border-radius:3px"></div>
+        </div>
+      </td>
+      <td class="num">${fR2(r.spend)}</td>
+      ${hasL?`<td class="num">${r.leads>0?fN(r.leads):'—'}</td>`:''}
+      ${hasL?`<td class="num ${cls(r.cpl)}">${fR(r.cpl)}</td>`:''}
+      <td class="num">${fR(r.cpm)}</td>
+    </tr>`;
+  });
+  
+  const hdLeads=hasL?'<th class="num">Leads</th><th class="num">CPL</th>':'';
+  el.innerHTML=`<div class="tc"><table>
+    <thead><tr><th style="width:24px">#</th><th>Segmento</th><th style="width:80px"></th><th class="num">Invest.</th>${hdLeads}<th class="num">CPM</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+function buildBreakdowns(){
+  const kKey=mesMode||String(period);
+  const bd=BREAKDOWN_DATA[kKey]||BREAKDOWN_DATA['30']||{};
+  
+  // For CLT/FGTS filter — breakdown data doesn't split by product
+  // so we show all data regardless of bdF (breakdown is account-level)
+  
+  buildBreakdownTable('bdAge', bd.age||[], true);
+  buildBreakdownTable('bdGender', bd.gender||[], true);
+  buildBreakdownTable('bdPlatform', bd.platform||[], true);
+}
+
+
 render();
 buildAds();
+buildBreakdowns();
 </script>
 <script>
 function toggleSidebar(){
