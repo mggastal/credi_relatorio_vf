@@ -192,7 +192,11 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;}
   .overlay.open{display:block;}
 }
-@media(min-width:769px){.mob-menu{display:none;}}
+@media(min-width:769px){.mob-menu{display:none;}.mob-nav{display:none;}}
+.mob-nav{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:6px 12px;gap:6px;z-index:99;}
+@media(max-width:768px){.mob-nav{display:flex;}}
+.mob-nav-btn{flex:1;padding:7px 10px;border-radius:8px;border:none;background:var(--surface2);cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.mob-nav-btn.active{background:#0f1523;color:#fff;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
@@ -246,6 +250,10 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
         <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
       </label>
     </div>
+  </div>
+  <div class="mob-nav" id="mobNav">
+    <button class="mob-nav-btn active" id="mobBtnDash" onclick="showPage('dash',document.querySelector('.sb-item.active')||this);updateMobNav('dash')">📊 Dashboard</button>
+    <button class="mob-nav-btn" id="mobBtnGeral" onclick="showPage('geral',document.querySelector('.sb-item:not(.active)')||this);updateMobNav('geral')">📋 Dados Gerais</button>
   </div>
   <div class="content">
 
@@ -573,6 +581,7 @@ function showPage(p,btn){
   document.getElementById('pbGeral').style.display=p==='geral'?'flex':'none';
 
   if(p==='geral')renderGeral();
+  updateMobNav(p);
 }
 
 function setPeriod(n,lbl,btn){
@@ -817,14 +826,14 @@ function buildCampTable(){
     let cards='';
     data.forEach((c,i)=>{
       const cid=`c${ym.replace('-','')}${i}`;
-      const hasMulti=c.conjs&&c.conjs.length>1;
+      const hasConjs=c.conjs&&c.conjs.length>0;
       const prodColor=c.product==='CLT'?G:c.product==='FGTS'?O:GR;
       const prodBg=c.product==='CLT'?'rgba(5,150,105,.1)':c.product==='FGTS'?'rgba(234,88,12,.1)':'rgba(107,114,128,.1)';
       cards+=`<div class="camp-card">
         <div class="camp-card-hd" onclick="toggleCard('${cid}')">
           <div class="camp-card-name">${c.n}</div>
           <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${prodBg};color:${prodColor};font-weight:700;white-space:nowrap">${c.product}</span>
-          ${hasMulti?`<span style="color:var(--muted);font-size:12px">${OPEN.has(cid)?'▼':'▶'}</span>`:''}
+          ${hasConjs?`<span style="color:var(--muted);font-size:12px">${OPEN.has(cid)?'▼':'▶'}</span>`:''}
         </div>
         <div class="camp-card-metrics">
           <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(c.spend)}</div></div>
@@ -832,7 +841,7 @@ function buildCampTable(){
           <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(c.cpl)}">${fR(c.cpl)}</div></div>
           <div class="camp-card-metric"><div class="lbl">CTR</div><div class="val">${c.ctr!=null?c.ctr.toFixed(2)+'%':'—'}</div></div>
         </div>
-        ${hasMulti?`<div class="camp-card-conjs ${OPEN.has(cid)?'open':''}" id="conj-${cid}">
+        ${hasConjs?`<div class="camp-card-conjs ${OPEN.has(cid)?'open':''}" id="conj-${cid}">
           ${c.conjs.map(j=>`<div class="conj-card">
             <div class="conj-card-name">↳ ${j.n}</div>
             <div class="conj-card-metrics">
@@ -1246,6 +1255,12 @@ function toggleTheme(){
   }
 })();
 
+function updateMobNav(p){
+  document.getElementById('mobBtnDash').classList.toggle('active', p==='dash');
+  document.getElementById('mobBtnGeral').classList.toggle('active', p==='geral');
+}
+// Hook into showPage to update mob nav
+const _origShowPage = showPage;
 function toggleSidebar(){
   document.querySelector('.sb').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('open');
