@@ -191,6 +191,14 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   .ranking-row{grid-template-columns:1fr!important;}
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;}
   .overlay.open{display:block;}
+  /* Dados Gerais mobile fixes */
+  .content{padding:12px;}
+  .tc{overflow-x:auto;}
+  .tc table{min-width:100%;width:max-content;}
+  #tGeralCamp table,#tGeralPub table{min-width:480px;}
+  .tc thead th,.tc tbody td{padding:6px 8px;white-space:nowrap;}
+  #page-geral .kpi-strip{grid-template-columns:repeat(2,1fr)!important;}
+  #page-geral .prod-metrics{grid-template-columns:repeat(2,1fr)!important;}
 }
 @media(min-width:769px){.mob-menu{display:none;}.mob-nav{display:none;}}
 .mob-nav{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:6px 12px;gap:6px;z-index:99;}
@@ -810,14 +818,31 @@ function buildCampTable(){
           <div class="camp-card-metric"><div class="lbl">CTR</div><div class="val">${c.ctr!=null?c.ctr.toFixed(2)+'%':'—'}</div></div>
         </div>
         ${hasConjs?`<div class="camp-card-conjs ${OPEN.has(cid)?'open':''}" id="conj-${cid}">
-          ${c.conjs.map(j=>`<div class="conj-card">
-            <div class="conj-card-name">↳ ${j.n}</div>
-            <div class="conj-card-metrics">
-              <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(j.spend)}</div></div>
-              <div class="camp-card-metric"><div class="lbl">Leads</div><div class="val">${fN(j.leads)}</div></div>
-              <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(j.cpl)}">${fR(j.cpl)}</div></div>
-            </div>
-          </div>`).join('')}
+          ${c.conjs.map((j,ji)=>{
+            const jmid=cid+'jm'+ji;
+            const hasAds=j.ads&&j.ads.length>0;
+            return `<div class="conj-card">
+              <div style="display:flex;align-items:center;justify-content:space-between;cursor:${hasAds?'pointer':'default'};margin-bottom:4px;" onclick="${hasAds?`toggleMobConj('${jmid}',this)`:''}">
+                <div class="conj-card-name" style="margin-bottom:0">↳ ${j.n}</div>
+                ${hasAds?`<span style="color:var(--muted);font-size:11px" id="arr-${jmid}">▶</span>`:''}
+              </div>
+              <div class="conj-card-metrics">
+                <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(j.spend)}</div></div>
+                <div class="camp-card-metric"><div class="lbl">Leads</div><div class="val">${fN(j.leads)}</div></div>
+                <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(j.cpl)}">${fR(j.cpl)}</div></div>
+              </div>
+              ${hasAds?`<div id="ads-${jmid}" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
+                ${j.ads.map(ad=>`<div style="background:var(--bg);border-radius:6px;padding:7px;margin-bottom:4px;">
+                  <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↳↳ ${ad.n}</div>
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;text-align:center;">
+                    <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Invest.</div><div style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace">${fR(ad.spend)}</div></div>
+                    <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Leads</div><div style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace">${fN(ad.leads)}</div></div>
+                    <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">CPL</div><div style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${cc(ad.cpl)}">${fR(ad.cpl)}</div></div>
+                  </div>
+                </div>`).join('')}
+              </div>`:''}
+            </div>`;
+          }).join('')}
         </div>`:''}
       </div>`;
     });
@@ -908,6 +933,14 @@ function toggleMesAcc(el){
   el.nextElementSibling.classList.toggle('open');
 }
 
+function toggleMobConj(jmid, el){
+  const div=document.getElementById('ads-'+jmid);
+  const arr=document.getElementById('arr-'+jmid);
+  if(!div)return;
+  const open=div.style.display==='block';
+  div.style.display=open?'none':'block';
+  if(arr)arr.textContent=open?'▶':'▼';
+}
 function toggleCard(id){
   const el=document.getElementById('conj-'+id);
   if(!el)return;
