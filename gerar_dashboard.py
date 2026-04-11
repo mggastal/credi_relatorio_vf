@@ -108,7 +108,7 @@ def build_daily(df):
         link_clicks=("link_clicks", "sum"),
     ).reset_index()
 
-    all_days = sorted(daily["date"].unique())[-60:]
+    all_days = sorted(daily["date"].unique())
 
     out = {k: [] for k in [
         "days", "spend", "leads", "cpl", "ctr", "cpm",
@@ -269,6 +269,27 @@ def build_camps_period(df, start_dt, end_dt, all_months):
 
         conjs = []
         for _, a in adsets.iterrows():
+            # Ads inside this adset
+            ads_in_conj = p[(p["campaign"] == r["campaign"]) & (p["adset"] == a["adset"])].groupby("ad").agg(
+                spend=("spend", "sum"), leads=("leads", "sum"),
+                impressions=("impressions", "sum"), link_clicks=("link_clicks", "sum"),
+            ).reset_index()
+            ads_in_conj["cpl"] = (ads_in_conj["spend"] / ads_in_conj["leads"]).where(ads_in_conj["leads"] > 0).round(2)
+            ads_in_conj["cpm"] = (ads_in_conj["spend"] / ads_in_conj["impressions"] * 1000).where(ads_in_conj["impressions"] > 0).round(2)
+            ads_in_conj["ctr"] = (ads_in_conj["link_clicks"] / ads_in_conj["impressions"] * 100).where(ads_in_conj["impressions"] > 0).round(2)
+            ads_in_conj = ads_in_conj.sort_values("leads", ascending=False)
+
+            anuncios = []
+            for _, ad in ads_in_conj.iterrows():
+                anuncios.append({
+                    "n": str(ad["ad"]),
+                    "spend": round(float(ad["spend"]), 2),
+                    "leads": int(ad["leads"]),
+                    "cpl": float(ad["cpl"]) if pd.notna(ad["cpl"]) else None,
+                    "cpm": float(ad["cpm"]) if pd.notna(ad["cpm"]) else None,
+                    "ctr": float(ad["ctr"]) if pd.notna(ad["ctr"]) else None,
+                })
+
             conjs.append({
                 "n": str(a["adset"]),
                 "spend": round(float(a["spend"]), 2),
@@ -276,6 +297,7 @@ def build_camps_period(df, start_dt, end_dt, all_months):
                 "cpl": float(a["cpl"]) if pd.notna(a["cpl"]) else None,
                 "cpm": float(a["cpm"]) if pd.notna(a["cpm"]) else None,
                 "ctr": float(a["ctr"]) if pd.notna(a["ctr"]) else None,
+                "ads": anuncios,
             })
 
         out.append({

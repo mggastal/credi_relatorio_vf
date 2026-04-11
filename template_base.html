@@ -780,8 +780,9 @@ function buildCampTable(){
       c.conjs.forEach((j,ji)=>{
         const jid=`${cid}j${ji}`;
         const hidden=!OPEN.has(cid)?'hidden':'';
-        rows+=`<tr class="conj-row ${hidden}" data-cid="${cid}">
-          <td style="text-align:center;color:#d1d5db;font-size:11px">↳</td>
+        const hasAds=j.ads&&j.ads.length>0;
+        rows+=`<tr class="conj-row ${hidden}" data-cid="${cid}" onclick="toggleA('${jid}')" style="cursor:${hasAds?'pointer':'default'}">
+          <td style="text-align:center;color:#d1d5db;font-size:11px">↳${hasAds?(OPEN.has(jid)?'▼':'▶'):''}</td>
           <td class="conj-name">${j.n}</td>
           <td></td>
           <td class="num" style="color:var(--muted2)">${fR(j.spend)}</td>
@@ -791,6 +792,22 @@ function buildCampTable(){
           <td class="num" style="color:${(j.ctr||0)>=3?G:(j.ctr||0)>=2?'#d97706':'#9ca3af'}">${j.ctr!=null?j.ctr.toFixed(2)+'%':'—'}</td>
           <td></td>
         </tr>`;
+        if(hasAds){
+          j.ads.forEach((ad,ai)=>{
+            const adHidden=(!OPEN.has(cid)||!OPEN.has(jid))?'hidden':'';
+            rows+=`<tr class="conj-row ${adHidden}" data-cid="${cid}" data-jid="${jid}">
+              <td style="text-align:center;color:#e2e8f0;font-size:10px;padding-left:8px">↳↳</td>
+              <td style="padding-left:44px;font-size:11px;color:var(--muted);border-left:2px solid #e2e8f0;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ad.n}</td>
+              <td></td>
+              <td class="num" style="color:var(--muted2);font-size:10px">${fR(ad.spend)}</td>
+              <td class="num" style="color:var(--muted2);font-size:10px">${fN(ad.leads)}</td>
+              <td class="num ${cls(ad.cpl)};font-size:10px">${fR(ad.cpl)}</td>
+              <td class="num" style="color:var(--muted2);font-size:10px">${fR(ad.cpm)}</td>
+              <td class="num" style="color:${(ad.ctr||0)>=3?G:(ad.ctr||0)>=2?'#d97706':'#9ca3af'};font-size:10px">${ad.ctr!=null?ad.ctr.toFixed(2)+'%':'—'}</td>
+              <td></td>
+            </tr>`;
+          });
+        }
       });
     }
   });
@@ -920,6 +937,23 @@ function toggleCard(id){
   const isOpen=OPEN.has(id);
   if(isOpen){OPEN.delete(id);el.classList.remove('open');}
   else{OPEN.add(id);el.classList.add('open');}
+}
+function toggleA(jid){
+  const isOpen=OPEN.has(jid);
+  if(isOpen){
+    OPEN.delete(jid);
+    document.querySelectorAll(`[data-jid="${jid}"]`).forEach(r=>r.classList.add('hidden'));
+  } else {
+    OPEN.add(jid);
+    document.querySelectorAll(`[data-jid="${jid}"]`).forEach(r=>r.classList.remove('hidden'));
+  }
+  // Update arrow in conj row
+  document.querySelectorAll('.conj-row').forEach(tr=>{
+    if(tr.getAttribute('onclick')===`toggleA('${jid}')`){
+      const td=tr.querySelector('td:first-child');
+      if(td) td.textContent='↳'+(OPEN.has(jid)?'▼':'▶');
+    }
+  });
 }
 function toggleC(id){
   const rows=document.querySelectorAll(`[data-cid="${id}"]`);
