@@ -71,7 +71,9 @@ def load_sheet():
             ).fillna(0)
 
     df["product"] = df["campaign"].apply(
-        lambda c: "FGTS" if "FGTS" in str(c).upper() else "CLT"
+        lambda c: "FGTS" if "FGTS" in str(c).upper()
+        else "CLT" if "CLT" in str(c).upper()
+        else "GERAL"
     )
     df["ym"] = df["date"].dt.to_period("M")
     df = df.dropna(subset=["date"])
@@ -106,7 +108,7 @@ def build_daily(df):
         link_clicks=("link_clicks", "sum"),
     ).reset_index()
 
-    all_days = sorted(daily["date"].unique())[-365:]
+    all_days = sorted(daily["date"].unique())[-60:]
 
     out = {k: [] for k in [
         "days", "spend", "leads", "cpl", "ctr", "cpm",
@@ -190,7 +192,7 @@ def build_kpis(df, all_days):
         }
         print(f"   {n}d: R${tS:,.0f} | {tL:,} leads | CTR {lc/imp*100:.2f}% | CPM R${tS/imp*1000:.2f}" if imp else f"   {n}d: sem dados")
 
-    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09", "2025-08", "2025-07", "2025-06", "2025-05", "2025-04", "2025-03", "2025-02", "2025-01", "2024-12", "2024-11"]:
         try:
             ym = pd.Period(ym_str, "M")
             p = df[df["ym"] == ym]
@@ -241,7 +243,7 @@ def build_camps_period(df, start_dt, end_dt, all_months):
     camps["cpl"] = (camps["spend"] / camps["leads"]).where(camps["leads"] > 0).round(2)
     camps["cpm"] = (camps["spend"] / camps["impressions"] * 1000).where(camps["impressions"] > 0).round(2)
     camps["ctr"] = (camps["link_clicks"] / camps["impressions"] * 100).where(camps["impressions"] > 0).round(2)
-    camps = camps.sort_values("leads", ascending=False).head(12)
+    camps = camps.sort_values("leads", ascending=False)
 
     cur_ym = pd.Period(end_dt, "M")
     cur_idx = list(all_months).index(cur_ym) if cur_ym in all_months else len(all_months) - 1
@@ -300,7 +302,7 @@ def build_camps(df, all_days):
         result[str(n)] = build_camps_period(df, start, last, all_months)
         print(f"   {n}d: {len(result[str(n)])} campanhas")
 
-    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09", "2025-08", "2025-07", "2025-06", "2025-05", "2025-04", "2025-03", "2025-02", "2025-01", "2024-12", "2024-11"]:
         try:
             ym = pd.Period(ym_str, "M")
             if ym not in all_months:
@@ -371,8 +373,8 @@ def build_ads_period(df, img_dir, start_dt, end_dt):
     ).reset_index().sort_values("leads", ascending=False)
 
     result = {"CLT": [], "FGTS": []}
-    for prod, n_top in [("CLT", 8), ("FGTS", 6)]:
-        subset = ads_agg[ads_agg["product"] == prod].drop_duplicates(subset="ad").head(n_top)
+    for prod in ["CLT", "FGTS"]:
+        subset = ads_agg[ads_agg["product"] == prod].drop_duplicates(subset="ad")
         for _, r in subset.iterrows():
             local = download_thumb(str(r["thumb"]), img_dir)
             tL = int(r["leads"])
@@ -397,7 +399,7 @@ def build_ads(df, img_dir, all_days):
         result[str(n)] = build_ads_period(df, img_dir, start, last)
         print(f"   {n}d: CLT {len(result[str(n)]['CLT'])} | FGTS {len(result[str(n)]['FGTS'])}")
 
-    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09", "2025-08", "2025-07", "2025-06", "2025-05", "2025-04", "2025-03", "2025-02", "2025-01", "2024-12", "2024-11"]:
         try:
             ym = pd.Period(ym_str, "M")
             if ym not in all_months:
@@ -518,7 +520,7 @@ def build_breakdowns(df_ga, df_pt, all_days):
         result[str(n)] = {"age": gd["age"], "gender": gd["gender"], "platform": pt}
         print(f"   {n}d: idade={len(gd['age'])} genero={len(gd['gender'])} plataforma={len(pt)}")
 
-    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09"]:
+    for ym_str in ["2026-04", "2026-03", "2026-02", "2026-01", "2025-12", "2025-11", "2025-10", "2025-09", "2025-08", "2025-07", "2025-06", "2025-05", "2025-04", "2025-03", "2025-02", "2025-01", "2024-12", "2024-11"]:
         try:
             ym = pd.Period(ym_str, "M")
             start = ym.start_time
