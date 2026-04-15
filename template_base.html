@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
 :root{--bg:#f0f2f7;--surface:#fff;--surface2:#f7f8fc;--border:rgba(0,0,0,0.07);--text:#0f1523;--muted:#6b7280;--muted2:#9ca3af;--green:#059669;--gbg:#ecfdf5;--gborder:#a7f3d0;--orange:#ea580c;--obg:#fff7ed;--oborder:#fdba74;--red:#dc2626;--warn:#d97706;--sh:0 1px 4px rgba(0,0,0,.06);--sh2:0 2px 12px rgba(0,0,0,.08);--r:14px;}
 [data-theme="dark"]{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2236;--border:rgba(255,255,255,0.08);--text:#f0f4ff;--muted:#8b95a9;--muted2:#5a6478;--gbg:rgba(5,150,105,.1);--gborder:rgba(5,150,105,.3);--obg:rgba(234,88,12,.1);--oborder:rgba(234,88,12,.3);--sh:0 1px 4px rgba(0,0,0,.3);--sh2:0 2px 12px rgba(0,0,0,.4);}
@@ -22,20 +23,8 @@
 [data-theme="dark"] .conj-card{background:#1a2236;}
 [data-theme="dark"] .kpi-val{color:var(--text);}
 [data-theme="dark"] .pm-val{color:var(--text);}
-[data-theme="dark"] .rank-val{color:var(--text);}
-[data-theme="dark"] .page-title{color:var(--text);}
-[data-theme="dark"] .cc-title{color:var(--text);}
 [data-theme="dark"] .sec-hd{color:var(--text);}
-[data-theme="dark"]{--bg:#0a0f1e;--surface:#111827;--surface2:#1a2236;--border:rgba(255,255,255,0.08);--text:#f0f4ff;--muted:#8b9ab0;--muted2:#4b5563;--gbg:rgba(5,150,105,.12);--gborder:rgba(5,150,105,.3);--obg:rgba(234,88,12,.12);--oborder:rgba(234,88,12,.3);--sh:0 1px 4px rgba(0,0,0,.3);--sh2:0 2px 12px rgba(0,0,0,.4);}
-[data-theme="dark"] .sb{background:#060c18;}
-[data-theme="dark"] .tc tbody tr.camp-row td{background:#1a2236;}
-[data-theme="dark"] .tc tbody tr.camp-row:hover td{background:#222f45;}
-[data-theme="dark"] .pb.active{background:#1a2236;}
-[data-theme="dark"] .cf-btn.active{background:#f0f4ff;color:#0a0f1e;}
-[data-theme="dark"] .stab.active.all{background:#f0f4ff;color:#0a0f1e;}
 [data-theme="dark"] .mes-header{background:#1a2236;}
-[data-theme="dark"] .mes-header:hover{background:#222f45;}
-[data-theme="dark"] .camp-card{background:#111827;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;overflow-y:auto;}
 .app{display:grid;grid-template-columns:210px 1fr;min-height:100vh;align-items:start;}
@@ -191,7 +180,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   .ranking-row{grid-template-columns:1fr!important;}
   .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199;}
   .overlay.open{display:block;}
-  /* Dados Gerais mobile fixes */
+}
+@media(min-width:769px){.mob-menu{display:none;}.mob-nav{display:none;}}
+.mob-nav{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:6px 12px;gap:6px;z-index:99;}
+@media(min-width:769px){.mob-nav{display:none!important;}}
+.mob-nav-btn{flex:1;padding:7px 10px;border-radius:8px;border:none;background:var(--surface2);cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s;}
+.mob-nav-btn.active{background:#0f1523;color:#fff;}
+@media(max-width:768px){
   .content{padding:12px;}
   .tc{overflow-x:auto;}
   .tc table{min-width:100%;width:max-content;}
@@ -199,12 +194,12 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
   .tc thead th,.tc tbody td{padding:6px 8px;white-space:nowrap;}
   #page-geral .kpi-strip{grid-template-columns:repeat(2,1fr)!important;}
   #page-geral .prod-metrics{grid-template-columns:repeat(2,1fr)!important;}
+  /* Dados Gerais quarter filter: vira select no mobile */
+  #pbGeral{display:none!important;}
+  #geralQMobWrap{display:block!important;}
 }
-@media(min-width:769px){.mob-menu{display:none;}.mob-nav{display:none;}}
-.mob-nav{display:none;background:var(--surface);border-bottom:1px solid var(--border);padding:6px 12px;gap:6px;z-index:99;}
-@media(max-width:768px){.mob-nav{display:flex;}}
-.mob-nav-btn{flex:1;padding:7px 10px;border-radius:8px;border:none;background:var(--surface2);cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s;}
-.mob-nav-btn.active{background:#0f1523;color:#fff;}
+#geralQMobWrap{display:none;padding:6px 12px;background:var(--surface);border-bottom:1px solid var(--border);}
+.geral-q-sel{width:100%;padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;}
 ::-webkit-scrollbar{width:4px;height:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
@@ -245,23 +240,40 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
         <button class="pb" onclick="setPeriod(7,'7 dias',this)">7 dias</button>
         <button class="pb" onclick="setPeriod(14,'14 dias',this)">14 dias</button>
         <button class="pb active" onclick="setPeriod(30,'30 dias',this)">30 dias</button>
-        <select class="pb mes-select" id="mesSelect" onchange="setPeriodMes(this.value, this.options[this.selectedIndex].text, this)">
+        <select class="pb mes-select" onchange="setPeriodMes(this.value, this.options[this.selectedIndex].text, this)">
         <option value="">Meses</option>
+        <option value="2026-04">Abr/26</option>
+        <option value="2026-03">Mar/26</option>
+        <option value="2026-02">Fev/26</option>
+        <option value="2026-01">Jan/26</option>
       </select>
         
         
       </div>
-      <div class="period-bar" id="pbGeral" style="display:none;">
-        <button class="pb active" onclick="setGeralQ('all',this)">Tudo</button>
-      </div>
-      <label id="themeToggle" title="Alternar tema" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);font-size:12px;font-weight:600;color:var(--muted);transition:all .15s;white-space:nowrap;" onclick="toggleTheme()">
+      <label id="themeToggle" style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:var(--surface2);font-size:12px;font-weight:600;color:var(--muted);transition:all .15s;white-space:nowrap;" onclick="toggleTheme()">
         <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
       </label>
+      <div class="period-bar" id="pbGeral" style="display:none;">
+        <button class="pb active" onclick="setGeralQ('all',this)">Tudo</button>
+        <button class="pb" onclick="setGeralQ('q1-26',this)">T1 2026</button>
+        <button class="pb" onclick="setGeralQ('q4-25',this)">T4 2025</button>
+        <button class="pb" onclick="setGeralQ('q3-25',this)">T3 2025</button>
+        <button class="pb" onclick="setGeralQ('q2-25',this)">T2 2025</button>
+      </div>
     </div>
   </div>
   <div class="mob-nav" id="mobNav">
     <button class="mob-nav-btn active" id="mobBtnDash" onclick="showPage('dash',document.querySelector('.sb-item.active')||this);updateMobNav('dash')">📊 Dashboard</button>
-    <button class="mob-nav-btn" id="mobBtnGeral" onclick="showPage('geral',document.querySelector('.sb-item:not(.active)')||this);updateMobNav('geral')">📋 Dados Gerais</button>
+    <button class="mob-nav-btn" id="mobBtnGeral" onclick="showPage('geral',this);updateMobNav('geral')">📋 Dados Gerais</button>
+  </div>
+  <div id="geralQMobWrap">
+    <select class="geral-q-sel" id="geralQSel" onchange="setGeralQMob(this.value)">
+      <option value="all">Tudo</option>
+      <option value="q1-26">T1 2026</option>
+      <option value="q4-25">T4 2025</option>
+      <option value="q3-25">T3 2025</option>
+      <option value="q2-25">T2 2025</option>
+    </select>
   </div>
   <div class="content">
 
@@ -480,90 +492,10 @@ const ADS={
 
 // ═══ ESTADO ══════════════════════════════════════════
 let period=30,mesMode=null,campF='all',chartF='geral',geralQ='all',geralCampF='all',bdF='all',showLabels=false;
-
-function initDynamicControls(){
-  // Populate month select from MONTHLY data (reversed = newest first)
-  const sel=document.getElementById('mesSelect');
-  if(!sel)return;
-  // Keep first option "Meses"
-  while(sel.options.length>1) sel.remove(1);
-  const months=[...MONTHLY.meses].reverse();
-  const lbls=[...MONTHLY.lbl].reverse();
-  months.forEach((ym,i)=>{
-    // Only show months that have campaign data
-    if(!CAMPS_MES[ym]||CAMPS_MES[ym].length===0) return;
-    const opt=document.createElement('option');
-    opt.value=ym;
-    opt.textContent=lbls[i];
-    sel.appendChild(opt);
-  });
-
-  // Build quarter buttons dynamically
-  const pb=document.getElementById('pbGeral');
-  if(!pb)return;
-  // Remove all except "Tudo"
-  while(pb.children.length>1) pb.removeChild(pb.lastChild);
-
-  // Detect available quarters from MONTHLY.meses
-  const quarters=[];
-  const seen=new Set();
-  MONTHLY.meses.forEach((ym,idx)=>{
-    const [y,m]=ym.split('-').map(Number);
-    const q=Math.ceil(m/3);
-    const key=`q${q}-${String(y).slice(2)}`;
-    if(!seen.has(key)){
-      seen.add(key);
-      const label=`T${q} ${y}`;
-      quarters.push({key,label,idx});
-    }
-  });
-
-  // Show last 6 quarters, newest first
-  quarters.reverse().slice(0,6).forEach(({key,label})=>{
-    const btn=document.createElement('button');
-    btn.className='pb';
-    btn.textContent=label;
-    btn.onclick=function(){setGeralQDyn(key,this);};
-    pb.appendChild(btn);
-  });
-}
-
-// Dynamic quarter ranges based on MONTHLY data
-function getQuarterRange(key){
-  if(key==='all') return null;
-  // key format: q1-26, q2-25, etc.
-  const m=key.match(/^q(\d)-(\d{2})$/);
-  if(!m) return null;
-  const qNum=parseInt(m[1]);
-  const year=2000+parseInt(m[2]);
-  const startMonth=(qNum-1)*3+1;
-  const endMonth=qNum*3;
-  const startYm=`${year}-${String(startMonth).padStart(2,'0')}`;
-  const endYm=`${year}-${String(endMonth).padStart(2,'0')}`;
-  const s=MONTHLY.meses.indexOf(startYm);
-  const e=MONTHLY.meses.lastIndexOf(endYm);
-  if(s===-1&&e===-1) return null;
-  return [Math.max(0,s), e===-1?MONTHLY.meses.length-1:e];
-}
-
-function setGeralQDyn(key,btn){
-  geralQ=key;
-  document.querySelectorAll('#pbGeral .pb').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderGeral();
-}
 const CH={};
 Chart.register(ChartDataLabels);
 const G='#059669',O='#ea580c',GR='#6b7280',BL='#2563eb';
 const GRID='rgba(0,0,0,0.05)',TXT='#9ca3af';
-function getChartColors(){
-  const dark=document.documentElement.getAttribute('data-theme')==='dark';
-  return {
-    txt: dark?'#8b95a9':'#9ca3af',
-    grid: dark?'rgba(255,255,255,0.06)':'rgba(0,0,0,0.05)',
-    tooltip: dark?'#1a2236':'#0f1523',
-  };
-}
 const bf={family:"'DM Sans',sans-serif",size:10};
 
 function sm(a){return a.reduce((s,v)=>(s||0)+(v||0),0);}
@@ -573,10 +505,7 @@ function cls(v){return v==null?'':v<=1.5?'cg':v<=2.5?'cw2':'cr';}
 function fR(v){if(v==null||isNaN(v))return '—';return 'R$'+Number(v).toFixed(2).replace('.',',');}
 function fR2(v){if(v==null||isNaN(v))return '—';return 'R$'+Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function fN(v){return Number(v).toLocaleString('pt-BR');}
-function getDlColor(){return document.documentElement.getAttribute('data-theme')==='dark'?'#ffffff':'#111827';}
-function bo(){
-  const cc2=getChartColors();
-  return{responsive:true,maintainAspectRatio:false,resizeDelay:50,plugins:{legend:{labels:{color:cc2.txt,font:bf,boxWidth:9,padding:10}},tooltip:{backgroundColor:cc2.tooltip,borderColor:'rgba(255,255,255,.08)',borderWidth:1,titleFont:{size:10},bodyFont:{size:10}},datalabels:{display:false}},scales:{x:{ticks:{color:cc2.txt,font:bf},grid:{color:cc2.grid}},y:{ticks:{color:cc2.txt,font:bf},grid:{color:cc2.grid}}}};}
+function bo(){return{responsive:true,maintainAspectRatio:false,resizeDelay:50,plugins:{legend:{labels:{color:TXT,font:bf,boxWidth:9,padding:10}},tooltip:{backgroundColor:'#0f1523',borderColor:'rgba(255,255,255,.08)',borderWidth:1,titleFont:{size:10},bodyFont:{size:10}}},scales:{x:{ticks:{color:TXT,font:bf},grid:{color:GRID}},y:{ticks:{color:TXT,font:bf},grid:{color:GRID}}}};}
 function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
 
 function showPage(p,btn){
@@ -586,8 +515,9 @@ function showPage(p,btn){
   btn.classList.add('active');
   document.getElementById('pageTitle').textContent=p==='dash'?'Dashboard Diário':'Dados Gerais da Conta';
   document.getElementById('pbDash').style.display=p==='dash'?'flex':'none';
-  document.getElementById('pbGeral').style.display=p==='geral'?'flex':'none';
-
+  // pbGeral hidden on mobile via CSS, shown on desktop only
+  if(window.innerWidth>768) document.getElementById('pbGeral').style.display=p==='geral'?'flex':'none';
+  else document.getElementById('pbGeral').style.display='none';
   if(p==='geral')renderGeral();
   updateMobNav(p);
 }
@@ -626,6 +556,8 @@ function setGeralQ(q,btn){
   geralQ=q;
   document.querySelectorAll('#pbGeral .pb').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  const sel=document.getElementById('geralQSel');
+  if(sel)sel.value=q;
   renderGeral();
 }
 function setGeralCampF(f,btn){
@@ -645,7 +577,34 @@ function switchS(s,t,btn){
 function getIdxs(){
   if(mesMode){
     const ds=MES_DAYS[mesMode]||[];
-    return DAILY.days.map((d,i)=>ds.includes(d)?i:-1).filter(i=>i>=0);
+    if(!ds||ds.length===0) return [];
+    // Find the first occurrence of the first day of this month in DAILY.days
+    // to anchor the search and avoid duplicates across years
+    const firstDay=ds[0];
+    let startIdx=0;
+    // Find the block of days that matches ALL days in ds consecutively
+    // Strategy: find a run in DAILY.days where all ds days appear in order
+    const n=DAILY.days.length;
+    for(let i=0;i<n;i++){
+      if(DAILY.days[i]===firstDay){
+        // Check if ds fits starting from i
+        let match=true, j=i;
+        for(let k=0;k<ds.length;k++){
+          while(j<n && DAILY.days[j]!==ds[k]) j++;
+          if(j>=n){match=false;break;}
+          j++;
+        }
+        if(match){startIdx=i;break;}
+      }
+    }
+    // Now collect indices: from startIdx, find each day in ds in order
+    const idxs=[];
+    let j=startIdx;
+    for(let k=0;k<ds.length;k++){
+      while(j<n && DAILY.days[j]!==ds[k]) j++;
+      if(j<n){idxs.push(j);j++;}
+    }
+    return idxs;
   }
   return DAILY.days.map((_,i)=>i).slice(-Math.min(period,DAILY.days.length));
 }
@@ -728,11 +687,13 @@ function render(){
   
   // Investimento: rótulo acima, sem casas decimais, preto
   const spDs={label:'Invest.',data:spArr,borderColor:'#00c49a',backgroundColor:'transparent',tension:.3,pointRadius:2,borderWidth:2,type:'line',yAxisID:'y1',spanGaps:false,
-    datalabels:{display:showLabels,font:{size:9,weight:'bold'},anchor:'end',align:'top',offset:2,formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null,color:getDlColor(),clip:false}};
+    datalabels:{display:showLabels,color:'#111',font:{size:9,weight:'bold'},anchor:'end',align:'top',offset:2,
+      formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null}};
   
   // CPL: rótulo abaixo da linha, preto escuro, 1 casa decimal
-  const cplDs={label:'CPL',data:cplArr,borderColor:document.documentElement.getAttribute('data-theme')==='dark'?'#aab':'#333',borderDash:[5,3],backgroundColor:'transparent',pointRadius:2,borderWidth:1.5,tension:.3,spanGaps:false,type:'line',yAxisID:'y2',
-    datalabels:{display:showLabels,font:{size:9,weight:'bold'},anchor:'end',align:'bottom',offset:2,formatter:v=>v!=null&&v>0?'R$'+v.toFixed(1):null,color:getDlColor(),clip:false}};
+  const cplDs={label:'CPL',data:cplArr,borderColor:'#333',borderDash:[5,3],backgroundColor:'transparent',pointRadius:2,borderWidth:1.5,tension:.3,spanGaps:false,type:'line',yAxisID:'y2',
+    datalabels:{display:showLabels,color:'#111',font:{size:9,weight:'bold'},anchor:'end',align:'bottom',offset:2,
+      formatter:v=>v!=null&&v>0?'R$'+v.toFixed(1):null}};
 
   CH['chMain']=new Chart(document.getElementById('chMain'),{data:{labels:days,datasets:[...leadsDS,spDs,cplDs]},options:{...bo(),scales:{
     x:{ticks:{color:TXT,font:bf,maxTicksLimit:12},grid:{color:GRID}},
@@ -785,7 +746,7 @@ function buildCampTable(){
     rows+=`<tr class="camp-row" onclick="toggleC('${cid}')">
       <td style="width:20px;text-align:center;color:var(--muted2);font-size:11px">${hasMulti?(OPEN.has(cid)?'▼':'▶'):''}</td>
       <td style="font-weight:700;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.n}</td>
-      <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':c.product==='FGTS'?'rgba(234,88,12,.1)':'rgba(107,114,128,.1)'};color:${c.product==='CLT'?G:c.product==='FGTS'?O:GR};font-weight:700">${c.product}</span></td>
+      <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)'};color:${c.product==='CLT'?G:O};font-weight:700">${c.product}</span></td>
       <td class="num">${fR(c.spend)}</td>
       <td class="num">${fN(c.leads)}</td>
       <td class="num ${cls(c.cpl)}">${fR(c.cpl)}</td>
@@ -797,9 +758,8 @@ function buildCampTable(){
       c.conjs.forEach((j,ji)=>{
         const jid=`${cid}j${ji}`;
         const hidden=!OPEN.has(cid)?'hidden':'';
-        const hasAds=j.ads&&j.ads.length>0;
-        rows+=`<tr class="conj-row ${hidden}" data-cid="${cid}" onclick="toggleA('${jid}')" style="cursor:${hasAds?'pointer':'default'}">
-          <td style="text-align:center;color:#d1d5db;font-size:11px">↳${hasAds?(OPEN.has(jid)?'▼':'▶'):''}</td>
+        rows+=`<tr class="conj-row ${hidden}" data-cid="${cid}">
+          <td style="text-align:center;color:#d1d5db;font-size:11px">↳</td>
           <td class="conj-name">${j.n}</td>
           <td></td>
           <td class="num" style="color:var(--muted2)">${fR(j.spend)}</td>
@@ -809,22 +769,6 @@ function buildCampTable(){
           <td class="num" style="color:${(j.ctr||0)>=3?G:(j.ctr||0)>=2?'#d97706':'#9ca3af'}">${j.ctr!=null?j.ctr.toFixed(2)+'%':'—'}</td>
           <td></td>
         </tr>`;
-        if(hasAds){
-          j.ads.forEach((ad,ai)=>{
-            const adHidden=(!OPEN.has(cid)||!OPEN.has(jid))?'hidden':'';
-            rows+=`<tr class="conj-row ${adHidden}" data-cid="${cid}" data-jid="${jid}">
-              <td style="text-align:center;color:#e2e8f0;font-size:10px;padding-left:8px">↳↳</td>
-              <td style="padding-left:44px;font-size:11px;color:var(--muted);border-left:2px solid #e2e8f0;max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ad.n}</td>
-              <td></td>
-              <td class="num" style="color:var(--muted2);font-size:10px">${fR(ad.spend)}</td>
-              <td class="num" style="color:var(--muted2);font-size:10px">${fN(ad.leads)}</td>
-              <td class="num ${cls(ad.cpl)};font-size:10px">${fR(ad.cpl)}</td>
-              <td class="num" style="color:var(--muted2);font-size:10px">${fR(ad.cpm)}</td>
-              <td class="num" style="color:${(ad.ctr||0)>=3?G:(ad.ctr||0)>=2?'#d97706':'#9ca3af'};font-size:10px">${ad.ctr!=null?ad.ctr.toFixed(2)+'%':'—'}</td>
-              <td></td>
-            </tr>`;
-          });
-        }
       });
     }
   });
@@ -834,14 +778,14 @@ function buildCampTable(){
     let cards='';
     data.forEach((c,i)=>{
       const cid=`c${ym.replace('-','')}${i}`;
-      const hasConjs=c.conjs&&c.conjs.length>0;
-      const prodColor=c.product==='CLT'?G:c.product==='FGTS'?O:GR;
-      const prodBg=c.product==='CLT'?'rgba(5,150,105,.1)':c.product==='FGTS'?'rgba(234,88,12,.1)':'rgba(107,114,128,.1)';
+      const hasMulti=c.conjs&&c.conjs.length>1;
+      const prodColor=c.product==='CLT'?G:O;
+      const prodBg=c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)';
       cards+=`<div class="camp-card">
         <div class="camp-card-hd" onclick="toggleCard('${cid}')">
           <div class="camp-card-name">${c.n}</div>
           <span style="font-size:9px;padding:2px 6px;border-radius:4px;background:${prodBg};color:${prodColor};font-weight:700;white-space:nowrap">${c.product}</span>
-          ${hasConjs?`<span style="color:var(--muted);font-size:12px">${OPEN.has(cid)?'▼':'▶'}</span>`:''}
+          ${hasMulti?`<span style="color:var(--muted);font-size:12px">${OPEN.has(cid)?'▼':'▶'}</span>`:''}
         </div>
         <div class="camp-card-metrics">
           <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(c.spend)}</div></div>
@@ -849,32 +793,15 @@ function buildCampTable(){
           <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(c.cpl)}">${fR(c.cpl)}</div></div>
           <div class="camp-card-metric"><div class="lbl">CTR</div><div class="val">${c.ctr!=null?c.ctr.toFixed(2)+'%':'—'}</div></div>
         </div>
-        ${hasConjs?`<div class="camp-card-conjs ${OPEN.has(cid)?'open':''}" id="conj-${cid}">
-          ${c.conjs.map((j,ji)=>{
-            const jmid=cid+'jm'+ji;
-            const hasAds=j.ads&&j.ads.length>0;
-            return `<div class="conj-card">
-              <div style="display:flex;align-items:center;justify-content:space-between;cursor:${hasAds?'pointer':'default'};margin-bottom:4px;" onclick="${hasAds?`toggleMobConj('${jmid}',this)`:''}">
-                <div class="conj-card-name" style="margin-bottom:0">↳ ${j.n}</div>
-                ${hasAds?`<span style="color:var(--muted);font-size:11px" id="arr-${jmid}">▶</span>`:''}
-              </div>
-              <div class="conj-card-metrics">
-                <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(j.spend)}</div></div>
-                <div class="camp-card-metric"><div class="lbl">Leads</div><div class="val">${fN(j.leads)}</div></div>
-                <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(j.cpl)}">${fR(j.cpl)}</div></div>
-              </div>
-              ${hasAds?`<div id="ads-${jmid}" style="display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:8px;">
-                ${j.ads.map(ad=>`<div style="background:var(--bg);border-radius:6px;padding:7px;margin-bottom:4px;">
-                  <div style="font-size:10px;font-weight:600;color:var(--muted);margin-bottom:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">↳↳ ${ad.n}</div>
-                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;text-align:center;">
-                    <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Invest.</div><div style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace">${fR(ad.spend)}</div></div>
-                    <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">Leads</div><div style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace">${fN(ad.leads)}</div></div>
-                    <div><div style="font-size:9px;color:var(--muted);text-transform:uppercase">CPL</div><div style="font-size:11px;font-weight:700;font-family:'DM Mono',monospace;color:${cc(ad.cpl)}">${fR(ad.cpl)}</div></div>
-                  </div>
-                </div>`).join('')}
-              </div>`:''}
-            </div>`;
-          }).join('')}
+        ${hasMulti?`<div class="camp-card-conjs ${OPEN.has(cid)?'open':''}" id="conj-${cid}">
+          ${c.conjs.map(j=>`<div class="conj-card">
+            <div class="conj-card-name">↳ ${j.n}</div>
+            <div class="conj-card-metrics">
+              <div class="camp-card-metric"><div class="lbl">Invest.</div><div class="val">${fR(j.spend)}</div></div>
+              <div class="camp-card-metric"><div class="lbl">Leads</div><div class="val">${fN(j.leads)}</div></div>
+              <div class="camp-card-metric"><div class="lbl">CPL</div><div class="val ${cls(j.cpl)}">${fR(j.cpl)}</div></div>
+            </div>
+          </div>`).join('')}
         </div>`:''}
       </div>`;
     });
@@ -897,8 +824,8 @@ function buildCampTable(){
     const plotLabels = vals.length===1 ? [0,1] : spkData.map((_,j)=>j);
     const last=vals[vals.length-1], first=vals[0];
     const col=last<=first?G:O;
-    new Chart(cv,{type:'line',data:{labels:plotLabels,datasets:[{data:plotData,borderColor:col,backgroundColor:col===G?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)',fill:true,tension:.35,pointRadius:plotData.map(v=>v!=null?2:0),pointBackgroundColor:col,borderWidth:1.5,spanGaps:false,datalabels:{display:false}}]},
-      options:{responsive:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:false},datalabels:{display:false}},scales:{x:{display:false},y:{display:false,min:Math.min(...vals)*.8,max:Math.max(...vals)*1.2}}}});
+    new Chart(cv,{type:'line',data:{labels:plotLabels,datasets:[{data:plotData,borderColor:col,backgroundColor:col===G?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)',fill:true,tension:.35,pointRadius:plotData.map(v=>v!=null?2:0),pointBackgroundColor:col,borderWidth:1.5,spanGaps:false}]},
+      options:{responsive:false,animation:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false,min:Math.min(...vals)*.8,max:Math.max(...vals)*1.2}}}});
   }
 
   // Draw camp sparklines
@@ -935,7 +862,7 @@ function renderMesAccordion(data,ym){
           let r=`<tr class="camp-row" onclick="toggleC('${cid}')">
             <td style="width:20px;text-align:center;color:var(--muted2);font-size:11px">${hasMulti?(OPEN.has(cid)?'▼':'▶'):''}</td>
             <td style="font-weight:700">${c.n}</td>
-            <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':c.product==='FGTS'?'rgba(234,88,12,.1)':'rgba(107,114,128,.1)'};color:${c.product==='CLT'?G:c.product==='FGTS'?O:GR};font-weight:700">${c.product}</span></td>
+            <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)'};color:${c.product==='CLT'?G:O};font-weight:700">${c.product}</span></td>
             <td class="num">${fR(c.spend)}</td><td class="num">${fN(c.leads)}</td>
             <td class="num ${cls(c.cpl)}">${fR(c.cpl)}</td>
             <td class="num">${fR(c.cpm)}</td>
@@ -965,37 +892,12 @@ function toggleMesAcc(el){
   el.nextElementSibling.classList.toggle('open');
 }
 
-function toggleMobConj(jmid, el){
-  const div=document.getElementById('ads-'+jmid);
-  const arr=document.getElementById('arr-'+jmid);
-  if(!div)return;
-  const open=div.style.display==='block';
-  div.style.display=open?'none':'block';
-  if(arr)arr.textContent=open?'▶':'▼';
-}
 function toggleCard(id){
   const el=document.getElementById('conj-'+id);
   if(!el)return;
   const isOpen=OPEN.has(id);
   if(isOpen){OPEN.delete(id);el.classList.remove('open');}
   else{OPEN.add(id);el.classList.add('open');}
-}
-function toggleA(jid){
-  const isOpen=OPEN.has(jid);
-  if(isOpen){
-    OPEN.delete(jid);
-    document.querySelectorAll(`[data-jid="${jid}"]`).forEach(r=>r.classList.add('hidden'));
-  } else {
-    OPEN.add(jid);
-    document.querySelectorAll(`[data-jid="${jid}"]`).forEach(r=>r.classList.remove('hidden'));
-  }
-  // Update arrow in conj row
-  document.querySelectorAll('.conj-row').forEach(tr=>{
-    if(tr.getAttribute('onclick')===`toggleA('${jid}')`){
-      const td=tr.querySelector('td:first-child');
-      if(td) td.textContent='↳'+(OPEN.has(jid)?'▼':'▶');
-    }
-  });
 }
 function toggleC(id){
   const rows=document.querySelectorAll(`[data-cid="${id}"]`);
@@ -1058,7 +960,7 @@ const QR2={
 };
 
 function renderGeral(){
-  const range=geralQ==='all'?null:getQuarterRange(geralQ);
+  const range=QR2[geralQ];
   const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
   const lbl=MONTHLY.lbl.slice(s,e);
   const cltS2=MONTHLY.cltS.slice(s,e),fgtsS2=MONTHLY.fgtsS.slice(s,e);
@@ -1067,9 +969,7 @@ function renderGeral(){
 
   const tS=sm(cltS2)+sm(fgtsS2),tL=sm(cltL2)+sm(fgtsL2);
   const cltSpT=sm(cltS2),fgtsSpT=sm(fgtsS2),cltLT=sm(cltL2),fgtsLT=sm(fgtsL2);
-  const qNames={'1':'Jan–Mar','2':'Abr–Jun','3':'Jul–Set','4':'Out–Dez'};
-  const qm=geralQ.match(/^q(\d)-(\d{2})$/);
-  const qlbl=geralQ==='all'?'Todos os meses':qm?`T${qm[1]} 20${qm[2]} (${qNames[qm[1]]||''})`:geralQ;
+  const qlbl={'all':'Todos os meses','q1-26':'T1 2026 (Jan–Mar)','q4-25':'T4 2025 (Out–Dez)','q3-25':'T3 2025 (Jul–Set)','q2-25':'T2 2025 (Abr–Jun)'}[geralQ]||'';
   document.getElementById('geralSub').textContent=qlbl;
   document.getElementById('rankLbl').textContent='— '+qlbl;
   document.getElementById('geralCampLbl').textContent='— '+qlbl;
@@ -1098,18 +998,12 @@ function renderGeral(){
       <div><div class="pm-lbl">Meses</div><div class="pm-val">${fgtsS2.filter(v=>v>0).length}</div></div>
     </div></div>`;
 
-  const dlG={datalabels:{display:false}};
-  const dlInvest={datalabels:{display:showLabels,color:getDlColor(),font:{size:9,weight:'bold'},anchor:'end',align:'top',offset:2,formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null,clip:false}};
-  const dlCPL={datalabels:{display:showLabels,color:getDlColor(),font:{size:9,weight:'bold'},anchor:'end',align:'top',offset:2,formatter:v=>v!=null&&v>0?'R$'+v.toFixed(1):null,clip:false}};
-
   dc('chGeralMensal');
-  const dlCLT={datalabels:{display:showLabels,color:getDlColor(),font:{size:9,weight:'bold'},anchor:'center',align:'center',formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null,clip:true}};
-  const dlFGTS={datalabels:{display:showLabels,color:getDlColor(),font:{size:9,weight:'bold'},anchor:'center',align:'center',formatter:v=>v!=null&&v>0?'R$'+Math.round(v).toLocaleString('pt-BR'):null,clip:true}};
-  CH['chGeralMensal']=new Chart(document.getElementById('chGeralMensal'),{type:'bar',data:{labels:lbl,datasets:[{label:'CLT',data:cltS2,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2,...dlCLT},{label:'FGTS',data:fgtsS2,backgroundColor:'rgba(234,88,12,.7)',stack:'s',borderRadius:2,...dlFGTS}]},options:{...bo(),scales:{x:{...bo().scales.x,stacked:true},y:{...bo().scales.y,stacked:true,ticks:{...bo().scales.y.ticks,callback:v=>'R$'+v.toLocaleString()}}}}});
+  CH['chGeralMensal']=new Chart(document.getElementById('chGeralMensal'),{type:'bar',data:{labels:lbl,datasets:[{label:'CLT',data:cltS2,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2},{label:'FGTS',data:fgtsS2,backgroundColor:'rgba(234,88,12,.7)',stack:'s',borderRadius:2}]},options:{...bo(),scales:{x:{...bo().scales.x,stacked:true},y:{...bo().scales.y,stacked:true,ticks:{...bo().scales.y.ticks,callback:v=>'R$'+v.toLocaleString()}}}}});
   dc('chGeralCPL');
-  CH['chGeralCPL']=new Chart(document.getElementById('chGeralCPL'),{type:'line',data:{labels:lbl,datasets:[{label:'Geral',data:cplG2,borderColor:GR,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false,...dlCPL},{label:'CLT',data:cltCPL2,borderColor:G,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false,...dlG},{label:'FGTS',data:fgtsCPL2,borderColor:O,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false,...dlG}]},options:{...bo(),scales:{x:{...bo().scales.x},y:{...bo().scales.y,ticks:{...bo().scales.y.ticks,callback:v=>'R$'+v.toFixed(2)}}}}});
+  CH['chGeralCPL']=new Chart(document.getElementById('chGeralCPL'),{type:'line',data:{labels:lbl,datasets:[{label:'Geral',data:cplG2,borderColor:GR,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false},{label:'CLT',data:cltCPL2,borderColor:G,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false},{label:'FGTS',data:fgtsCPL2,borderColor:O,tension:.35,pointRadius:3,borderWidth:2,spanGaps:false}]},options:{...bo(),scales:{x:{...bo().scales.x},y:{...bo().scales.y,ticks:{...bo().scales.y.ticks,callback:v=>'R$'+v.toFixed(2)}}}}});
   dc('chGeralLeads');
-  CH['chGeralLeads']=new Chart(document.getElementById('chGeralLeads'),{type:'bar',data:{labels:lbl,datasets:[{label:'CLT',data:cltL2,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2,...dlG},{label:'FGTS',data:fgtsL2,backgroundColor:'rgba(234,88,12,.75)',stack:'s',borderRadius:2,...dlG}]},options:{...bo(),scales:{x:{...bo().scales.x,stacked:true},y:{...bo().scales.y,stacked:true}}}});
+  CH['chGeralLeads']=new Chart(document.getElementById('chGeralLeads'),{type:'bar',data:{labels:lbl,datasets:[{label:'CLT',data:cltL2,backgroundColor:'rgba(5,150,105,.75)',stack:'s',borderRadius:2},{label:'FGTS',data:fgtsL2,backgroundColor:'rgba(234,88,12,.75)',stack:'s',borderRadius:2}]},options:{...bo(),scales:{x:{...bo().scales.x,stacked:true},y:{...bo().scales.y,stacked:true}}}});
 
   // Rankings
   const withData=lbl.map((l,i)=>({l,cpl:cplG2[i],leads:(cltL2[i]||0)+(fgtsL2[i]||0)})).filter(m=>m.cpl!=null&&m.leads>50);
@@ -1125,7 +1019,7 @@ function renderGeral(){
 }
 
 function buildGeralCampTable(){
-  const range=geralQ==='all'?null:getQuarterRange(geralQ);
+  const range=QR2[geralQ];
   const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
   const meses=MONTHLY.meses.slice(s,e);
   const map={};
@@ -1144,7 +1038,7 @@ function buildGeralCampTable(){
     <tbody>${all.map((c,i)=>`<tr>
       <td style="color:#9ca3af;font-size:10px">${i+1}</td>
       <td style="font-weight:600;font-size:12px;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.n}</td>
-      <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':c.product==='FGTS'?'rgba(234,88,12,.1)':'rgba(107,114,128,.1)'};color:${c.product==='CLT'?G:c.product==='FGTS'?O:GR};font-weight:700">${c.product}</span></td>
+      <td class="num"><span style="font-size:9px;padding:2px 5px;border-radius:4px;background:${c.product==='CLT'?'rgba(5,150,105,.1)':'rgba(234,88,12,.1)'};color:${c.product==='CLT'?G:O};font-weight:700">${c.product}</span></td>
       <td class="num">${fR(c.spend)}</td>
       <td class="num">${fN(c.leads)}</td>
       <td class="num ${cls(c.cpl)}">${fR(c.cpl)}</td>
@@ -1153,7 +1047,7 @@ function buildGeralCampTable(){
 
 function buildGeralPubTable(){
   // Aggregate adsets across available months
-  const range=geralQ==='all'?null:getQuarterRange(geralQ);
+  const range=QR2[geralQ];
   const s=range?range[0]:0,e=range?range[1]+1:MONTHLY.meses.length;
   const meses=MONTHLY.meses.slice(s,e);
   const map={};
@@ -1255,45 +1149,58 @@ function buildBreakdowns(){
 }
 
 
-initDynamicControls();
+updateMobNav('dash');
 render();
 buildAds();
 buildBreakdowns();
 </script>
 <script>
 function toggleTheme(){
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
   if(isDark){
     document.documentElement.removeAttribute('data-theme');
-    document.getElementById('themeIcon').textContent = '🌙';
-    document.getElementById('themeLabel').textContent = 'Dark';
+    document.getElementById('themeIcon').textContent='🌙';
+    document.getElementById('themeLabel').textContent='Dark';
     localStorage.setItem('credi-theme','light');
   } else {
     document.documentElement.setAttribute('data-theme','dark');
-    document.getElementById('themeIcon').textContent = '☀️';
-    document.getElementById('themeLabel').textContent = 'Claro';
+    document.getElementById('themeIcon').textContent='☀️';
+    document.getElementById('themeLabel').textContent='Claro';
     localStorage.setItem('credi-theme','dark');
   }
   render();
 }
-// Restore theme on load
 (function(){
-  const saved = localStorage.getItem('credi-theme');
-  if(saved === 'dark'){
+  const saved=localStorage.getItem('credi-theme');
+  if(saved==='dark'){
     document.documentElement.setAttribute('data-theme','dark');
     document.addEventListener('DOMContentLoaded',function(){
-      document.getElementById('themeIcon').textContent = '☀️';
-      document.getElementById('themeLabel').textContent = 'Claro';
+      const i=document.getElementById('themeIcon');
+      const l=document.getElementById('themeLabel');
+      if(i)i.textContent='☀️';
+      if(l)l.textContent='Claro';
     });
   }
 })();
-
 function updateMobNav(p){
-  document.getElementById('mobBtnDash').classList.toggle('active', p==='dash');
-  document.getElementById('mobBtnGeral').classList.toggle('active', p==='geral');
+  const bd=document.getElementById('mobBtnDash');
+  const bg=document.getElementById('mobBtnGeral');
+  if(bd)bd.classList.toggle('active',p==='dash');
+  if(bg)bg.classList.toggle('active',p==='geral');
+  const gw=document.getElementById('geralQMobWrap');
+  if(gw)gw.style.display=(p==='geral'&&window.innerWidth<=768)?'block':'none';
 }
-// Hook into showPage to update mob nav
-const _origShowPage = showPage;
+function setGeralQMob(key){
+  geralQ=key;
+  document.querySelectorAll('#pbGeral .pb').forEach(b=>b.classList.remove('active'));
+  const first=document.querySelector('#pbGeral .pb');
+  if(first&&key==='all')first.classList.add('active');
+  renderGeral();
+}
+function toggleLabels(checked){
+  showLabels=checked;
+  render();
+}
 function toggleSidebar(){
   document.querySelector('.sb').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('open');
