@@ -108,7 +108,7 @@ def build_daily(df):
         link_clicks=("link_clicks", "sum"),
     ).reset_index()
 
-    all_days = sorted(daily["date"].unique())
+    all_days = sorted(daily["date"].unique())[-90:]
 
     out = {k: [] for k in [
         "days", "spend", "leads", "cpl", "ctr", "cpm",
