@@ -529,7 +529,7 @@ def build_gender_period(df_ga, start_dt, end_dt):
     return {"age": to_list(age_agg, "age"), "gender": to_list(gen_agg, "gender")}
 
 
-def build_breakdowns(df_ga, df_pt, all_days):
+def build_breakdowns(df_ga, df_pt, all_days, all_months=None):
     """Gera todos os breakdowns para todos os períodos."""
     last = pd.Timestamp(all_days[-1])
     all_months_ga = sorted(df_ga["ym"].unique()) if not df_ga.empty and "ym" in df_ga.columns else []
@@ -542,7 +542,8 @@ def build_breakdowns(df_ga, df_pt, all_days):
         result[str(n)] = {"age": gd["age"], "gender": gd["gender"], "platform": pt}
         print(f"   {n}d: idade={len(gd['age'])} genero={len(gd['gender'])} plataforma={len(pt)}")
 
-    for ym_str in sorted([str(ym) for ym in all_months], reverse=True):
+    _months = all_months if all_months is not None else (sorted(df_ga["ym"].unique()) if not df_ga.empty and "ym" in df_ga.columns else [])
+    for ym_str in sorted([str(ym) for ym in _months], reverse=True):
         try:
             ym = pd.Period(ym_str, "M")
             start = ym.start_time
@@ -627,7 +628,7 @@ def main():
     df_pt = load_breakdown(SHEET_URL_PT, "Platform Position (Breakdown)", "platform")
 
     print("Gerando breakdowns por periodo...")
-    breakdown_data = build_breakdowns(df_ga, df_pt, all_days)
+    breakdown_data = build_breakdowns(df_ga, df_pt, all_days, sorted(df['ym'].unique()))
 
     print("Gerando HTML...")
     if not Path(TEMPLATE_FILE).exists():
