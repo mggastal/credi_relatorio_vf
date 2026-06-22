@@ -576,7 +576,7 @@ function fN(v){return Number(v).toLocaleString('pt-BR');}
 function getDlColor(){return document.documentElement.getAttribute('data-theme')==='dark'?'#ffffff':'#111827';}
 function bo(){
   const cc2=getChartColors();
-  return{responsive:true,maintainAspectRatio:false,resizeDelay:50,plugins:{legend:{labels:{color:cc2.txt,font:bf,boxWidth:9,padding:10}},tooltip:{backgroundColor:cc2.tooltip,borderColor:'rgba(255,255,255,.08)',borderWidth:1,titleFont:{size:10},bodyFont:{size:10}},datalabels:{display:false}},scales:{x:{ticks:{color:cc2.txt,font:bf},grid:{color:cc2.grid}},y:{ticks:{color:cc2.txt,font:bf},grid:{color:cc2.grid}}}};}
+  return{responsive:true,maintainAspectRatio:false,resizeDelay:50,plugins:{legend:{labels:{color:cc2.txt,font:bf,boxWidth:9,padding:10}},tooltip:{backgroundColor:cc2.tooltip,borderColor:'rgba(255,255,255,.08)',borderWidth:1,titleFont:{size:10},bodyFont:{size:10},mode:'index',intersect:false},datalabels:{display:false}},scales:{x:{ticks:{color:cc2.txt,font:bf},grid:{color:cc2.grid}},y:{ticks:{color:cc2.txt,font:bf},grid:{color:cc2.grid}}}};}
 function dc(id){if(CH[id]){CH[id].destroy();delete CH[id];}}
 
 function showPage(p,btn){
